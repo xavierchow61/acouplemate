@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>A Couple Minutes - Fixed</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { light: '#FFF0F3', DEFAULT: '#FFCCD5', dark: '#C9184A', text: '#590D22' },
+                        dark: { bg: '#121212', surface: '#1E1E1E', text: '#E5E5E5' }
+                    },
+                    fontFamily: { serif: ['"Playfair Display"', '"Noto Serif TC"', 'serif'], sans: ['"Noto Sans TC"', 'sans-serif'] },
+                    boxShadow: { 'card': '0 20px 60px -15px rgba(89, 13, 34, 0.2)' },
+                    animation: { 'float': 'float 3s ease-in-out infinite', 'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both' },
+                    keyframes: {
+                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+                        shake: { '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' }, '20%, 80%': { transform: 'translate3d(2px, 0, 0)' }, '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' }, '40%, 60%': { transform: 'translate3d(4px, 0, 0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; overflow: hidden; -webkit-tap-highlight-color: transparent; user-select: none; transition: background 0.5s ease; }
+        body:not(.dark) { background: linear-gradient(135deg, #FFF0F3 0%, #FFF5F7 50%, #FFCCD5 100%); }
+        body.dark { background: linear-gradient(135deg, #121212 0%, #1a1a1a 50%, #2d1b20 100%); color: #E5E5E5; }
+        .glass { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.4); }
+        .dark .glass { background: rgba(45, 45, 45, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: white; }
+        .blur-reveal { filter: blur(16px); transform: scale(0.95); transition: all 0.6s ease; }
+        .blur-reveal.revealed { filter: blur(0); transform: scale(1); }
+        .hazard-stripe { background: repeating-linear-gradient(45deg, #FBBF24, #FBBF24 10px, #000 10px, #000 20px); }
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+        .slide-up-enter-active { transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .slide-up-enter-from { transform: translateY(100px) scale(0.9); opacity: 0; }
+    </style>
+</head>
+<body>
+
+<div id="app" class="h-screen w-full flex flex-col relative overflow-hidden transition-colors duration-500">
+    
+    <div class="absolute top-0 left-0 w-full z-50 p-4 flex justify-between items-center">
+        <div class="flex items-center gap-2" @click="resetGame">
+            <span class="font-serif font-bold tracking-widest text-xl cursor-pointer text-brand-text dark:text-white">C/M</span>
+        </div>
+        <div class="flex gap-3">
+            <button @click="toggleDarkMode" class="p-2 rounded-full glass hover:bg-white/40 transition text-brand-text dark:text-white">
+                {{ isDark ? '🌙' : '☀️' }}
+            </button>
+            <button @click="showSettings = true" class="p-2 rounded-full glass hover:bg-white/40 transition text-brand-text dark:text-white">
+                ⚙️
+            </button>
+        </div>
+    </div>
+
+    <div v-if="showSettings" class="absolute inset-0 z-[60] bg-black/50 backdrop-blur-sm flex justify-end">
+        <div class="w-4/5 md:w-1/3 h-full bg-white dark:bg-dark-surface shadow-2xl p-6 flex flex-col overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold dark:text-white">Settings</h2>
+                <button @click="showSettings = false" class="text-2xl dark:text-white">&times;</button>
+            </div>
+            
+            <div class="mb-6">
+                <h3 class="text-sm font-bold opacity-50 mb-3 uppercase dark:text-gray-400">Language</h3>
+                <div class="flex gap-2">
+                    <button v-for="lang in ['zh-TW', 'en']" @click="currentLang = lang"
+                        class="px-3 py-1 rounded-lg text-sm border transition dark:text-white"
+                        :class="currentLang === lang ? 'bg-brand-dark text-white' : 'border-gray-300'">
+                        {{ lang === 'en' ? 'English' : '繁體中文' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="w-full max-w-md mx-auto h-full flex flex-col relative z-10 px-6 pt-16 pb-6">
+
+        <transition name="fade" mode="out-in">
+            <div v-if="gameState === 'intro'" class="flex-1 flex flex-col justify-center space-y-5" key="intro">
+                <div class="text-center space-y-2 mb-2">
+                    <h2 class="text-4xl font-serif font-bold dark:text-white">A Couple Minutes</h2>
+                    <p class="opacity-60 text-sm dark:text-gray-400">{{ t('subtitle') }}</p>
+                </div>
+
+                <div class="space-y-3 overflow-y-auto pb-4 px-1">
+                    <div v-for="(mode, key) in modes" :key="key" 
+                        @click="startGame(key)"
+                        class="glass p-5 rounded-2xl flex items-center gap-4 cursor-pointer transform transition hover:scale-[1.02] active:scale-95 shadow-sm border-l-4"
+                        :class="mode.borderColor">
+                        <div class="text-2xl w-10 h-10 rounded-full flex items-center justify-center" :class="mode.iconBg">{{ mode.emoji }}</div>
+                        <div class="flex-1">
+                            <h3 class="font-bold dark:text-white">{{ t(mode.titleKey) }}</h3>
+                            <p class="text-xs opacity-60 dark:text-gray-400">{{ t(mode.descKey) }}</p>
+                        </div>
+                        <div v-if="progress[key]" class="text-green-500">✓</div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else-if="gameState === 'selection'" class="flex-1 flex flex-col justify-center items-center gap-6" key="selection">
+                <div class="text-center mb-4">
+                    <div class="glass px-4 py-1 rounded-full text-xs font-bold inline-block mb-4 dark:text-white">
+                        {{ t('turn') }}: <span class="text-brand-dark dark:text-brand-accent text-lg">{{ currentPlayer }}</span>
+                    </div>
+                    <h3 class="text-2xl font-serif font-bold dark:text-white">{{ t('chooseDestiny') }}</h3>
+                </div>
+                <button @click="pickTodCard('truth')" class="w-full py-8 bg-blue-50 border-2 border-blue-200 rounded-3xl flex items-center px-6 gap-4 shadow-sm hover:bg-blue-100 transition group relative overflow-hidden">
+                    <div class="text-4xl">💙</div>
+                    <div class="text-left z-10">
+                        <div class="text-2xl font-bold text-blue-600">{{ t('truth') }}</div>
+                        <div class="text-xs text-blue-400">TRUTH</div>
+                    </div>
+                </button>
+                <button @click="pickTodCard('dare')" class="w-full py-8 bg-orange-50 border-2 border-orange-200 rounded-3xl flex items-center px-6 gap-4 shadow-sm hover:bg-orange-100 transition group relative overflow-hidden">
+                    <div class="text-4xl">🔥</div>
+                    <div class="text-left z-10">
+                        <div class="text-2xl font-bold text-orange-600">{{ t('dare') }}</div>
+                        <div class="text-xs text-orange-400">DARE</div>
+                    </div>
+                </button>
+                <button @click="resetGame" class="mt-8 text-sm opacity-50 dark:text-white">{{ t('back') }}</button>
+            </div>
+
+            <div v-else-if="gameState === 'game'" class="flex-1 flex flex-col relative pb-4" key="game">
+                <div v-if="currentCategory !== 'tod'" class="flex justify-center mb-4">
+                    <div class="glass px-4 py-1 rounded-full text-xs font-bold tracking-wider dark:text-white">
+                        {{ t('turn') }}: {{ currentPlayer }}
+                    </div>
+                </div>
+
+                <div class="flex-1 flex items-center justify-center perspective-1000 relative z-20">
+                    <transition name="slide-up" mode="out-in">
+                        <div :key="currentCard.id" 
+                             @click="revealCard"
+                             class="w-full aspect-[3/4] max-h-[500px] rounded-[32px] shadow-card p-8 flex flex-col relative overflow-hidden cursor-pointer transition-colors duration-500 bg-white dark:bg-dark-surface border dark:border-gray-700"
+                             :class="cardBorderClass">
+                            
+                            <div v-if="!isRevealed" class="absolute inset-0 z-30 flex flex-col items-center justify-center bg-white/10 backdrop-blur-md">
+                                <span class="text-4xl animate-float mb-2">👆</span>
+                                <p class="text-sm font-bold tracking-widest uppercase opacity-60 dark:text-white">Tap to Reveal</p>
+                            </div>
+                            
+                            <div class="flex-1 flex flex-col justify-center items-center text-center transition-all duration-700"
+                                 :class="{ 'blur-reveal': true, 'revealed': isRevealed }">
+                                
+                                <span v-if="currentCard.type === 'action' || currentCard.subType === 'dare'" class="mb-4 px-3 py-1 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full">DARE / ACTION</span>
+                                <span v-if="currentCard.subType === 'truth'" class="mb-4 px-3 py-1 bg-blue-100 text-blue-600 text-xs font-bold rounded-full">TRUTH</span>
+
+                                <h3 class="font-serif font-medium leading-relaxed text-2xl md:text-3xl dark:text-white">
+                                    {{ displayContent(currentCard.text) }}
+                                </h3>
+
+                                <div v-if="currentCard.time && isRevealed" class="mt-8">
+                                    <button @click.stop="toggleTimer" class="px-6 py-2 rounded-full border border-current opacity-70 font-mono text-xl flex items-center gap-2 dark:text-white">
+                                        <span v-if="!timerRunning">▶ {{ currentCard.time }}s</span>
+                                        <span v-else class="text-red-500 font-bold">{{ timerCount }}s</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mt-auto flex justify-between items-end opacity-30 dark:text-gray-400">
+                                <span class="text-[10px] uppercase">{{ currentCategory === 'tod' ? 'Truth or Dare' : t('question') }}</span>
+                            </div>
+                        </div>
+                    </transition>
+                </div>
+
+                <div class="mt-6 flex flex-col gap-3 z-30">
+                    <div class="flex gap-3">
+                        <button @click="sendReaction" class="w-14 h-14 rounded-2xl bg-white dark:bg-dark-surface shadow-soft flex items-center justify-center text-2xl active:scale-90 transition">❤️</button>
+                        <button @click="nextCard" :disabled="!isRevealed" 
+                                class="flex-1 h-14 rounded-2xl bg-brand-dark text-white font-bold shadow-soft flex justify-center items-center active:scale-95 disabled:opacity-50 transition">
+                            {{ isLastCard && currentCategory !== 'tod' ? t('finish') : t('next') }}
+                        </button>
+                    </div>
+                    
+                    <button v-if="isRevealed" @click="triggerPunishment" class="text-xs text-gray-400 dark:text-gray-500 underline py-2">
+                        {{ t('giveUp') }} ☠️
+                    </button>
+                </div>
+            </div>
+
+            <div v-else-if="gameState === 'punish'" class="flex-1 flex flex-col justify-center items-center p-6" key="punish">
+                <div class="w-full bg-gray-900 text-white rounded-[32px] shadow-2xl p-8 flex flex-col relative overflow-hidden text-center animate-shake border border-gray-700">
+                    <div class="absolute top-0 left-0 w-full h-3 hazard-stripe"></div>
+                    <div class="absolute bottom-0 left-0 w-full h-3 hazard-stripe"></div>
+                    <div class="my-8">
+                        <div class="text-6xl mb-4">☠️</div>
+                        <h2 class="text-2xl font-bold font-serif mb-2 text-red-500">PUNISHMENT</h2>
+                        <h3 class="text-xl md:text-2xl font-bold leading-relaxed">
+                            {{ displayContent(currentPunishment) }}
+                        </h3>
+                    </div>
+                </div>
+                <button @click="resolvePunishment" class="mt-8 w-full py-4 bg-gray-800 text-white rounded-2xl font-bold border border-gray-600 active:scale-95 transition">
+                    {{ t('accept') }}
+                </button>
+            </div>
+        </transition>
+
+    </div>
+    <canvas id="confetti" class="absolute inset-0 pointer-events-none z-[100]"></canvas>
+
+</div>
+
+<script>
+    const { createApp, ref, computed, onMounted, watch } = Vue;
+
+    // --- 完整題庫 (雙語) ---
+    const DB = {
+        light: [
+            { text: { zh: "如果這輩子只能吃一種食物，你會選什麼？", en: "If you could only eat one food for the rest of your life, what would it be?" }, type: "question" },
+            { text: { zh: "你覺得自己最像哪一種動物？", en: "What animal do you think you are most like?" }, type: "question" },
+            { text: { zh: "手機裡哪一種 App 你絕對離不開？", en: "Which app on your phone can you absolutely not live without?" }, type: "question" },
+            { text: { zh: "如果我們可以交換身體一天，你最想用我的身體做什麼？", en: "If we could switch bodies for a day, what would you want to do with mine?" }, type: "question" },
+            { text: { zh: "你小時候的夢想職業是什麼？", en: "What was your dream job when you were a child?" }, type: "question" },
+            { text: { zh: "如果中了一億樂透，你第一件會買的東西是什麼？", en: "If you won 100 million in the lottery, what is the first thing you would buy?" }, type: "question" },
+            { text: { zh: "你最奇怪的一個小習慣或怪癖是什麼？", en: "What is your weirdest habit or quirk?" }, type: "question" },
+            { text: { zh: "如果你可以擁有一種超能力，你想要什麼？", en: "If you could have one superpower, what would it be?" }, type: "question" },
+            { text: { zh: "如果世界末日來了，你只能帶三樣東西逃跑，你會帶什麼？", en: "If the apocalypse came and you could only take three things, what would they be?" }, type: "question" },
+            { text: { zh: "你洗澡的時候會唱歌嗎？如果會，通常唱什麼歌？", en: "Do you sing in the shower? If so, what do you usually sing?" }, type: "question" },
+            { text: { zh: "你最喜歡的季節是哪一個？", en: "What is your favorite season?" }, type: "question" },
+            { text: { zh: "你比較喜歡貓還是狗？為什麼？", en: "Do you prefer cats or dogs? Why?" }, type: "question" },
+            { text: { zh: "你心情不好的時候，通常會想吃什麼？", en: "What do you usually want to eat when you are in a bad mood?" }, type: "question" },
+            { text: { zh: "High Five：和對方來一個最有默契的擊掌。", en: "High Five: Give each other your best high five." }, type: "action" },
+            { text: { zh: "扮醜自拍：用對方的手機拍一張自己最醜的鬼臉照。", en: "Ugly Selfie: Take the ugliest selfie possible using your partner's phone." }, type: "action" },
+            { text: { zh: "如果你能變成卡通人物一天，你想變成誰？", en: "If you could be a cartoon character for a day, who would it be?" }, type: "question" },
+           { text: { zh: "如果能時間旅行，你想去未來還是過去？", en: "Time travel: future or past?" }, type: "question" },
+            { text: { zh: "你最討厭的家務是什麼？願意為我做嗎？", en: "Worst chore? Would you do it for me?" }, type: "question" },
+            { text: { zh: "手指遊戲：比賽誰的手指比較長。", en: "Finger length contest." }, type: "action" },
+            { text: { zh: "假裝陌生人：用 pickup line 搭訕對方。", en: "Pretend to be strangers: use a pickup line." }, type: "action" },
+            { text: { zh: "幸運抽獎：閉眼隨機摸對方臉上一個部位，誇它。", en: "Lucky draw: touch a random face part and compliment it." }, type: "action" }
+   ],
+
+        medium: [
+            { text: { zh: "我們第一次約會時，你心裡在想什麼？", en: "What were you thinking during our first date?" }, type: "question" },
+            { text: { zh: "你覺得我做過最貼心的一個小舉動是什麼？", en: "What is the sweetest little thing I've ever done for you?" }, type: "question" },
+            { text: { zh: "如果要給我們的關係選一首主題曲，會是哪一首？", en: "If you had to pick a theme song for our relationship, what would it be?" }, type: "question" },
+            { text: { zh: "你覺得我身上最性感的部位是哪裡？", en: "Which part of my body do you think is the sexiest?" }, type: "question" },
+            { text: { zh: "我們相處到現在，你覺得最搞笑或尷尬的回憶是什麼？", en: "What is the funniest or most embarrassing memory we have together?" }, type: "question" },
+            { text: { zh: "你覺得我最需要被鼓勵或支持的地方是什麼？", en: "Where do you think I need encouragement or support the most?" }, type: "question" },
+            { text: { zh: "你第一次見到我的時候，對我的第一印象是什麼？", en: "What was your first impression of me when we first met?" }, type: "question" },
+            { text: { zh: "我們相處的過程中，哪一個瞬間讓你覺得「就是這個人了」？", en: "At what moment did you realize 'this is the one'?" }, type: "question" },
+            { text: { zh: "你最喜歡我們一起去過的哪個地方？", en: "What is your favorite place we've visited together?" }, type: "question" },
+            { text: { zh: "你覺得我們兩個人個性上最大的互補是什麼？", en: "What is the biggest way our personalities complement each other?" }, type: "question" },
+            { text: { zh: "鼻尖磨蹭：用你的鼻子磨蹭對方的鼻子 10 秒鐘。", en: "Nose Rub: Rub your nose against your partner's nose for 10 seconds." }, type: "action", time: 10 },
+            { text: { zh: "專屬按摩：幫對方按摩肩膀或手掌 1 分鐘。", en: "Massage: Massage your partner's shoulders or hands for 1 minute." }, type: "action", time: 60 },
+            { text: { zh: "耳邊低語：在對方耳邊用氣音說一句「我愛你」。", en: "Whisper: Whisper 'I love you' in your partner's ear." }, type: "action" },
+            { text: { zh: "在我生病時，你最想為我做什麼？", en: "What would you do if I was sick?" }, type: "question" },
+            { text: { zh: "描述我們理想的週末約會。", en: "Describe our perfect weekend date." }, type: "question" }
+ ],
+        deep: [
+            { text: { zh: "你覺得「幸福的家庭」最重要的三個元素是什麼？", en: "What are the three most important elements of a happy family?" }, type: "question" },
+            { text: { zh: "假如我們吵架了，你希望我怎麼打破僵局？", en: "If we have a fight, how would you like me to break the ice?" }, type: "question" },
+            { text: { zh: "你覺得自己在愛情中最大的弱點是什麼？", en: "What do you think is your biggest weakness in love?" }, type: "question" },
+            { text: { zh: "如果這是我生命的最後一天，你想對我說什麼？", en: "If this were the last day of my life, what would you want to say to me?" }, type: "question" },
+            { text: { zh: "你對我們未來 5 年的生活有什麼想像？", en: "How do you envision our lives in 5 years?" }, type: "question" },
+            { text: { zh: "在我們的關係中，你最害怕失去的是什麼？", en: "What are you most afraid of losing in our relationship?" }, type: "question" },
+            { text: { zh: "你覺得我們之間目前最大的挑戰是什麼？", en: "What do you think is the biggest challenge between us right now?" }, type: "question" },
+            { text: { zh: "你對於「婚姻」的真實看法是什麼？", en: "What is your honest view on marriage?" }, type: "question" },
+            { text: { zh: "如果我們在金錢觀上發生嚴重分歧，你覺得該怎麼解決？", en: "If we have a serious disagreement about money, how should we resolve it?" }, type: "question" },
+            { text: { zh: "你人生中最大的恐懼是什麼？", en: "What is your biggest fear in life?" }, type: "question" },
+            { text: { zh: "心跳連結：把手放在對方左胸口，安靜感受心跳 30 秒。", en: "Heartbeat: Place your hand on your partner's chest and feel their heartbeat for 30s." }, type: "action", time: 30 },
+            { text: { zh: "無聲告白：不能說話，用肢體語言表達「我愛你」。", en: "Silent Love: Without speaking, use body language to express 'I love you'." }, type: "action" }
+        ],
+        truth: [
+            { text: { zh: "現在心裡有沒有對我不滿的一件事？是什麼？", en: "Is there anything you are currently dissatisfied with about me? What is it?" }, subType: "truth" },
+            { text: { zh: "說出你前任做過最讓你受不了的一件事。", en: "What is the most unbearable thing your ex ever did?" }, subType: "truth" },
+            { text: { zh: "你有沒有偷偷看過我的手機？", en: "Have you ever secretly looked through my phone?" }, subType: "truth" },
+            { text: { zh: "我們第一次接吻時，你真實的感覺是什麼？", en: "What did you honestly feel during our first kiss?" }, subType: "truth" },
+            { text: { zh: "你覺得我們這段關係中，誰付出比較多？", en: "Who do you think contributes more in this relationship?" }, subType: "truth" },
+            { text: { zh: "你有沒有對我說過謊？哪怕是善意的？", en: "Have you ever lied to me? Even a white lie?" }, subType: "truth" },
+            { text: { zh: "如果我們分手了，你會想挽回嗎？", en: "If we broke up, would you try to get me back?" }, subType: "truth" },
+            { text: { zh: "你覺得我哪一個朋友最有吸引力？", en: "Which of my friends do you find most attractive?" }, subType: "truth" },
+            { text: { zh: "最近一次讓你產生性幻想的對象是誰（除了我）？", en: "Who was the last person you had a sexual fantasy about (besides me)?" }, subType: "truth" },
+            { text: { zh: "你最受不了我的一個生活習慣是什麼？", en: "What is the one habit of mine you can't stand the most?" }, subType: "truth" }
+        ],
+        dare: [
+            { text: { zh: "模仿我生氣時候的樣子，直到我滿意為止。", en: "Imitate how I look when I'm angry until I'm satisfied." }, subType: "dare" },
+            { text: { zh: "公主抱我（或背我）深蹲 5 下。", en: "Princess carry (or piggyback) me and do 5 squats." }, subType: "dare", time: 30 },
+            { text: { zh: "讓我查看你的手機相簿 1 分鐘。", en: "Let me look through your phone gallery for 1 minute." }, subType: "dare", time: 60 },
+            { text: { zh: "用嘴巴咬住我的耳朵，堅持 10 秒。", en: "Gently bite my ear and hold for 10 seconds." }, subType: "dare", time: 10 },
+            { text: { zh: "現在打電話給一位朋友，大聲說「我好想你」，然後掛斷。", en: "Call a friend, scream 'I miss you so much', and hang up." }, subType: "dare" },
+            { text: { zh: "去冰箱拿冰塊，含在嘴裡然後親吻我的脖子。", en: "Get an ice cube, hold it in your mouth, and kiss my neck." }, subType: "dare" },
+            { text: { zh: "跳一段性感的舞蹈，持續 30 秒。", en: "Do a sexy dance for 30 seconds." }, subType: "dare", time: 30 },
+            { text: { zh: "和我對視 1 分鐘，誰先笑誰就輸。", en: "Stare contest for 1 minute. First to laugh loses." }, subType: "dare", time: 60 },
+            { text: { zh: "脫掉一件身上的衣物（飾品不算）。", en: "Remove one item of clothing (accessories don't count)." }, subType: "dare" },
+            { text: { zh: "用屁股寫字，寫出我的名字。", en: "Write my name using your butt." }, subType: "dare" }
+        ],
+        punishments: [
+            { zh: "罰喝一杯水", en: "Drink a glass of water" },
+            { zh: "伏地挺身 10 下", en: "Do 10 push-ups" },
+            { zh: "被對方彈額頭一下", en: "Get flicked on the forehead" },
+            { zh: "負責買下次的宵夜", en: "Buy the next late-night snack" },
+            { zh: "幫對方吹頭髮", en: "Dry your partner's hair next time" },
+            { zh: "交出手機檢查 3 分鐘", en: "Hand over phone for 3 min inspection" },
+            { zh: "不能說話 3 分鐘", en: "No speaking for 3 minutes" },
+            { zh: "幫對方按摩 5 分鐘", en: "Massage partner for 5 minutes" }
+        ]
+    };
+
+    const I18N = {
+        'en': {
+            subtitle: "Give love a moment.",
+            modeLight: "Ice Breaker", descLight: "Fun & easy",
+            modeMedium: "Heating Up", descMedium: "Memories & sweetness",
+            modeDeep: "Soul Talk", descDeep: "Deep connection",
+            modeTod: "Truth or Dare", descTod: "Spicy challenges",
+            turn: "Turn", next: "Next Card", finish: "Finish", giveUp: "Can't do it? Punishment",
+            chooseDestiny: "Choose Your Destiny", truth: "Truth", dare: "Dare", back: "Back to Menu",
+            accept: "Accept & Next", question: "Question"
+        },
+        'zh-TW': {
+            subtitle: "給愛一點時間，讓心更靠近。",
+            modeLight: "輕鬆破冰", descLight: "趣味話題 & 簡單互動",
+            modeMedium: "加溫時刻", descMedium: "甜蜜回憶 & 親密接觸",
+            modeDeep: "靈魂深處", descDeep: "價值觀 & 心靈連結",
+            modeTod: "真心話大冒險", descTod: "誠實回答或接受挑戰",
+            turn: "輪到", next: "下一張", finish: "完成遊戲", giveUp: "做不到？接受懲罰",
+            chooseDestiny: "選擇你的命運", truth: "真心話", dare: "大冒險", back: "回主選單",
+            accept: "接受懲罰並下一局", question: "問題"
+        }
+    };
+
+    createApp({
+        setup() {
+            // State
+            const gameState = ref('intro');
+            const currentCategory = ref('light');
+            const currentLang = ref('zh-TW');
+            const isDark = ref(false);
+            const showSettings = ref(false);
+            const deck = ref([]);
+            const currentIndex = ref(0);
+            const isRevealed = ref(false);
+            const turn = ref(0);
+            const progress = ref({ light: false, medium: false, deep: false, tod: false });
+            
+            const currentPunishment = ref("");
+
+            const timerRunning = ref(false);
+            const timerCount = ref(0);
+            let timerInterval = null;
+
+            // Computed
+            const t = (key) => I18N[currentLang.value][key] || key;
+            const players = computed(() => currentLang.value === 'en' ? ["You", "Partner"] : ["你", "伴侶"]);
+            const currentPlayer = computed(() => players.value[turn.value]);
+            
+            const currentCard = computed(() => {
+                if (deck.value.length === 0) return { text: "" };
+                return deck.value[currentIndex.value];
+            });
+
+            // --- 新增：顯示邏輯處理函式 ---
+            const displayContent = (content) => {
+                if (!content) return '';
+                // 如果是字串（相容舊格式）直接回傳
+                if (typeof content === 'string') return content;
+                // 如果是物件，根據語言設定回傳
+                return content[currentLang.value] || content['zh'];
+            };
+            
+            const isLastCard = computed(() => currentIndex.value >= deck.value.length - 1);
+
+            const cardBorderClass = computed(() => {
+                if(currentCategory.value === 'tod') {
+                    return currentCard.value.subType === 'truth' ? 'border-l-4 border-blue-400' : 'border-l-4 border-orange-400';
+                }
+                return currentCard.value.type === 'action' ? 'border-l-4 border-yellow-400' : 'border-l-4 border-brand-light';
+            });
+
+            const modes = {
+                light: { titleKey: 'modeLight', descKey: 'descLight', emoji: '☁️', borderColor: 'border-blue-300', iconBg: 'bg-blue-100' },
+                medium: { titleKey: 'modeMedium', descKey: 'descMedium', emoji: '✨', borderColor: 'border-pink-300', iconBg: 'bg-pink-100' },
+                deep: { titleKey: 'modeDeep', descKey: 'descDeep', emoji: '🌙', borderColor: 'border-purple-300', iconBg: 'bg-purple-100' },
+                tod: { titleKey: 'modeTod', descKey: 'descTod', emoji: '🔥', borderColor: 'border-orange-300', iconBg: 'bg-orange-100' }
+            };
+
+            const toggleDarkMode = () => { isDark.value = !isDark.value; document.documentElement.classList.toggle('dark'); };
+            const vibration = (pattern = 10) => { if(navigator.vibrate) navigator.vibrate(pattern); };
+
+            const startGame = (category) => {
+                currentCategory.value = category;
+                turn.value = 0;
+                resetTimer();
+
+                if (category === 'tod') {
+                    deck.value = []; 
+                    gameState.value = 'selection';
+                } else {
+                    // 重要修正：確保加上 ID 讓 Vue 正確渲染
+                    deck.value = [...DB[category]]
+                        .sort(() => Math.random() - 0.5)
+                        .map((c, i) => ({ ...c, id: i }));
+                    
+                    currentIndex.value = 0;
+                    isRevealed.value = false;
+                    gameState.value = 'game';
+                }
+            };
+
+            const pickTodCard = (type) => {
+                vibration(20);
+                const pool = DB[type];
+                const card = pool[Math.floor(Math.random() * pool.length)];
+                deck.value = [{ ...card, id: Date.now() }];
+                currentIndex.value = 0;
+                isRevealed.value = false;
+                gameState.value = 'game';
+            };
+
+            const revealCard = () => {
+                if (!isRevealed.value) {
+                    vibration(30);
+                    isRevealed.value = true;
+                }
+            };
+
+            const nextCard = () => {
+                vibration(10);
+                resetTimer();
+                if (currentCategory.value === 'tod') {
+                    turn.value = turn.value === 0 ? 1 : 0;
+                    gameState.value = 'selection';
+                } else {
+                    if (isLastCard.value) {
+                        progress.value[currentCategory.value] = true;
+                        launchConfetti();
+                        resetGame();
+                    } else {
+                        isRevealed.value = false;
+                        setTimeout(() => {
+                            currentIndex.value++;
+                            turn.value = turn.value === 0 ? 1 : 0;
+                        }, 300);
+                    }
+                }
+            };
+
+            const triggerPunishment = () => {
+                vibration([50, 50, 200]);
+                const list = DB.punishments;
+                currentPunishment.value = list[Math.floor(Math.random() * list.length)];
+                gameState.value = 'punish';
+            };
+
+            const resolvePunishment = () => {
+                nextCard(); 
+            };
+
+            const resetGame = () => {
+                gameState.value = 'intro';
+                resetTimer();
+            };
+
+            const resetTimer = () => {
+                clearInterval(timerInterval);
+                timerRunning.value = false;
+                timerCount.value = 0;
+            };
+
+            const toggleTimer = () => {
+                vibration(20);
+                if (timerRunning.value) {
+                    resetTimer();
+                } else {
+                    timerCount.value = currentCard.value.time;
+                    timerRunning.value = true;
+                    timerInterval = setInterval(() => {
+                        if (timerCount.value > 0) timerCount.value--;
+                        else { vibration([100,50,100]); resetTimer(); }
+                    }, 1000);
+                }
+            };
+
+            const sendReaction = () => {
+                vibration([10, 30]);
+                confetti({ particleCount: 30, spread: 50, origin: { y: 0.8 }, colors: ['#ff0000', '#ffccd5'] });
+            };
+
+            const launchConfetti = () => {
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            };
+
+            return {
+                gameState, modes, startGame, resetGame,
+                currentCategory, currentCard, currentPlayer,
+                isRevealed, isLastCard,
+                nextCard, revealCard,
+                showSettings, isDark, toggleDarkMode, currentLang, t, progress,
+                pickTodCard, triggerPunishment, currentPunishment, resolvePunishment,
+                sendReaction, toggleTimer, timerRunning, timerCount, cardBorderClass,
+                displayContent 
+            };
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
