@@ -2,8 +2,8 @@
 <html lang="zh-TW" class="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>A Couple Minutes - Fixed</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>A Couple Minutes - Ultimate Edition</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,65 +20,132 @@
                         dark: { bg: '#121212', surface: '#1E1E1E', text: '#E5E5E5' }
                     },
                     fontFamily: { serif: ['"Playfair Display"', '"Noto Serif TC"', 'serif'], sans: ['"Noto Sans TC"', 'sans-serif'] },
-                    boxShadow: { 'card': '0 20px 60px -15px rgba(89, 13, 34, 0.2)' },
-                    animation: { 'float': 'float 3s ease-in-out infinite', 'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both' },
+                    boxShadow: { 'card': '0 20px 60px -15px rgba(89, 13, 34, 0.2)', 'soft': '0 10px 30px -5px rgba(0,0,0,0.1)' },
+                    animation: { 
+                        'float': 'float 3s ease-in-out infinite', 
+                        'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
+                        'gradient': 'gradientBG 15s ease infinite',
+                        'spin-slow': 'spin 3s linear infinite'
+                    },
                     keyframes: {
                         float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
-                        shake: { '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' }, '20%, 80%': { transform: 'translate3d(2px, 0, 0)' }, '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' }, '40%, 60%': { transform: 'translate3d(4px, 0, 0)' } }
+                        shake: { '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' }, '20%, 80%': { transform: 'translate3d(2px, 0, 0)' }, '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' }, '40%, 60%': { transform: 'translate3d(4px, 0, 0)' } },
+                        gradientBG: { '0%': { backgroundPosition: '0% 50%' }, '50%': { backgroundPosition: '100% 50%' }, '100%': { backgroundPosition: '0% 50%' } }
                     }
                 }
             }
         }
     </script>
     <style>
-        body { font-family: 'Noto Sans TC', sans-serif; overflow: hidden; -webkit-tap-highlight-color: transparent; user-select: none; transition: background 0.5s ease; }
-        body:not(.dark) { background: linear-gradient(135deg, #FFF0F3 0%, #FFF5F7 50%, #FFCCD5 100%); }
-        body.dark { background: linear-gradient(135deg, #121212 0%, #1a1a1a 50%, #2d1b20 100%); color: #E5E5E5; }
+        body { 
+            font-family: 'Noto Sans TC', sans-serif; 
+            overflow: hidden; 
+            -webkit-tap-highlight-color: transparent; 
+            user-select: none; 
+            background-size: 400% 400%;
+            transition: color 0.5s ease;
+        }
+        
+        /* 動態漸層背景 */
+        body:not(.dark) { 
+            background-image: linear-gradient(-45deg, #FFF0F3, #ffe3e8, #ffd1da, #fff0f5); 
+            animation: gradientBG 15s ease infinite;
+        }
+        body.dark { 
+            background-image: linear-gradient(-45deg, #121212, #2d1b20, #1a0b0e, #231518); 
+            animation: gradientBG 15s ease infinite;
+            color: #E5E5E5; 
+        }
+
         .glass { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.4); }
         .dark .glass { background: rgba(45, 45, 45, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: white; }
+        
         .blur-reveal { filter: blur(16px); transform: scale(0.95); transition: all 0.6s ease; }
         .blur-reveal.revealed { filter: blur(0); transform: scale(1); }
+        
         .hazard-stripe { background: repeating-linear-gradient(45deg, #FBBF24, #FBBF24 10px, #000 10px, #000 20px); }
+        
+        /* Transitions */
         .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
         .slide-up-enter-active { transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .slide-up-enter-from { transform: translateY(100px) scale(0.9); opacity: 0; }
+        
+        /* Click Effect */
+        .active-scale:active { transform: scale(0.96); }
+
+        /* 洗牌動畫關鍵影格 */
+        @keyframes shuffle-motion {
+            0% { transform: translateX(0) scale(1) rotate(0); }
+            25% { transform: translateX(-15px) scale(0.95) rotate(-5deg); }
+            50% { transform: translateX(15px) scale(0.95) rotate(5deg); }
+            75% { transform: translateX(-10px) scale(0.98) rotate(-3deg); }
+            100% { transform: translateX(0) scale(1) rotate(0); }
+        }
+
+        .animate-shuffle {
+            animation: shuffle-motion 0.6s ease-in-out infinite;
+        }
+
+        /* 牌堆效果 (利用偽元素創造卡片厚度感) */
+        .card-stack::before, .card-stack::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 32px;
+            background: inherit;
+            border: inherit;
+            opacity: 0.5;
+            z-index: -1;
+            transition: all 0.3s ease;
+        }
+        /* 讓後面的卡片稍微錯開 */
+        .card-stack::before { transform: translateY(5px) scale(0.98); }
+        .card-stack::after { transform: translateY(10px) scale(0.96); }
+
+        /* 洗牌時，後面的卡片也跟著動 */
+        .animate-shuffle.card-stack::before { animation: shuffle-motion 0.6s ease-in-out infinite 0.1s; }
+        .animate-shuffle.card-stack::after { animation: shuffle-motion 0.6s ease-in-out infinite 0.2s; }
     </style>
 </head>
 <body>
 
-<div id="app" class="h-screen w-full flex flex-col relative overflow-hidden transition-colors duration-500">
+<div id="app" class="h-[100dvh] w-full flex flex-col relative overflow-hidden transition-colors duration-500">
     
     <div class="absolute top-0 left-0 w-full z-50 p-4 flex justify-between items-center">
-        <div class="flex items-center gap-2" @click="resetGame">
-            <span class="font-serif font-bold tracking-widest text-xl cursor-pointer text-brand-text dark:text-white">C/M</span>
+        <div class="flex items-center gap-2 active-scale" @click="resetGame">
+            <span class="font-serif font-bold tracking-widest text-xl cursor-pointer text-brand-text dark:text-white">Home Page</span>
         </div>
         <div class="flex gap-3">
-            <button @click="toggleDarkMode" class="p-2 rounded-full glass hover:bg-white/40 transition text-brand-text dark:text-white">
+            <button @click="toggleDarkMode" class="p-2 rounded-full glass hover:bg-white/40 active-scale transition text-brand-text dark:text-white">
                 {{ isDark ? '🌙' : '☀️' }}
             </button>
-            <button @click="showSettings = true" class="p-2 rounded-full glass hover:bg-white/40 transition text-brand-text dark:text-white">
+            <button @click="showSettings = true" class="p-2 rounded-full glass hover:bg-white/40 active-scale transition text-brand-text dark:text-white">
                 ⚙️
             </button>
         </div>
     </div>
 
     <div v-if="showSettings" class="absolute inset-0 z-[60] bg-black/50 backdrop-blur-sm flex justify-end">
-        <div class="w-4/5 md:w-1/3 h-full bg-white dark:bg-dark-surface shadow-2xl p-6 flex flex-col overflow-y-auto">
+        <div class="w-4/5 md:w-1/3 h-full bg-white dark:bg-dark-surface shadow-2xl p-6 flex flex-col overflow-y-auto slide-in-right">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-bold dark:text-white">Settings</h2>
-                <button @click="showSettings = false" class="text-2xl dark:text-white">&times;</button>
+                <button @click="showSettings = false" class="text-2xl dark:text-white p-2">&times;</button>
             </div>
             
             <div class="mb-6">
                 <h3 class="text-sm font-bold opacity-50 mb-3 uppercase dark:text-gray-400">Language</h3>
                 <div class="flex gap-2">
                     <button v-for="lang in ['zh-TW', 'en']" @click="currentLang = lang"
-                        class="px-3 py-1 rounded-lg text-sm border transition dark:text-white"
-                        :class="currentLang === lang ? 'bg-brand-dark text-white' : 'border-gray-300'">
+                        class="flex-1 px-3 py-2 rounded-lg text-sm border transition dark:text-white"
+                        :class="currentLang === lang ? 'bg-brand-dark text-white border-brand-dark' : 'border-gray-300 dark:border-gray-600'">
                         {{ lang === 'en' ? 'English' : '繁體中文' }}
                     </button>
                 </div>
+            </div>
+
+            <div class="mt-auto text-xs text-center opacity-30 dark:text-gray-500">
+                TWO DEEP <br> Ultimate Edition
             </div>
         </div>
     </div>
@@ -86,82 +153,98 @@
     <div class="w-full max-w-md mx-auto h-full flex flex-col relative z-10 px-6 pt-16 pb-6">
 
         <transition name="fade" mode="out-in">
+            
             <div v-if="gameState === 'intro'" class="flex-1 flex flex-col justify-center space-y-5" key="intro">
                 <div class="text-center space-y-2 mb-2">
-                    <h2 class="text-4xl font-serif font-bold dark:text-white">A Couple Minutes</h2>
+                    <h2 class="text-4xl font-serif font-bold dark:text-white">TWO DEEP</h2>
                     <p class="opacity-60 text-sm dark:text-gray-400">{{ t('subtitle') }}</p>
                 </div>
 
-                <div class="space-y-3 overflow-y-auto pb-4 px-1">
+                <div class="space-y-3 overflow-y-auto pb-4 px-1 hide-scrollbar">
                     <div v-for="(mode, key) in modes" :key="key" 
                         @click="startGame(key)"
-                        class="glass p-5 rounded-2xl flex items-center gap-4 cursor-pointer transform transition hover:scale-[1.02] active:scale-95 shadow-sm border-l-4"
+                        class="glass p-4 rounded-2xl flex items-center gap-4 cursor-pointer transform transition hover:scale-[1.02] active:scale-95 shadow-sm border-l-4"
                         :class="mode.borderColor">
-                        <div class="text-2xl w-10 h-10 rounded-full flex items-center justify-center" :class="mode.iconBg">{{ mode.emoji }}</div>
+                        <div class="text-2xl w-12 h-12 rounded-full flex items-center justify-center shadow-sm" :class="mode.iconBg">{{ mode.emoji }}</div>
                         <div class="flex-1">
                             <h3 class="font-bold dark:text-white">{{ t(mode.titleKey) }}</h3>
-                            <p class="text-xs opacity-60 dark:text-gray-400">{{ t(mode.descKey) }}</p>
+                            <p class="text-xs opacity-60 dark:text-gray-400 leading-tight mt-1">{{ t(mode.descKey) }}</p>
                         </div>
-                        <div v-if="progress[key]" class="text-green-500">✓</div>
+                        <div v-if="progress[key]" class="text-green-500 font-bold">✓</div>
                     </div>
                 </div>
             </div>
 
             <div v-else-if="gameState === 'selection'" class="flex-1 flex flex-col justify-center items-center gap-6" key="selection">
                 <div class="text-center mb-4">
-                    <div class="glass px-4 py-1 rounded-full text-xs font-bold inline-block mb-4 dark:text-white">
-                        {{ t('turn') }}: <span class="text-brand-dark dark:text-brand-accent text-lg">{{ currentPlayer }}</span>
+                    <div class="glass px-4 py-1 rounded-full text-xs font-bold inline-block mb-4 dark:text-white backdrop-blur-md">
+                        {{ t('turn') }}: <span class="text-brand-dark dark:text-brand text-lg mx-1">{{ currentPlayer }}</span>
                     </div>
                     <h3 class="text-2xl font-serif font-bold dark:text-white">{{ t('chooseDestiny') }}</h3>
                 </div>
-                <button @click="pickTodCard('truth')" class="w-full py-8 bg-blue-50 border-2 border-blue-200 rounded-3xl flex items-center px-6 gap-4 shadow-sm hover:bg-blue-100 transition group relative overflow-hidden">
-                    <div class="text-4xl">💙</div>
+                <button @click="pickTodCard('truth')" class="w-full py-8 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-3xl flex items-center px-6 gap-4 shadow-sm active:scale-95 transition group relative overflow-hidden">
+                    <div class="text-4xl group-hover:scale-110 transition">💙</div>
                     <div class="text-left z-10">
-                        <div class="text-2xl font-bold text-blue-600">{{ t('truth') }}</div>
-                        <div class="text-xs text-blue-400">TRUTH</div>
+                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ t('truth') }}</div>
+                        <div class="text-xs text-blue-400 dark:text-blue-300/60 font-bold tracking-wider">TRUTH</div>
                     </div>
                 </button>
-                <button @click="pickTodCard('dare')" class="w-full py-8 bg-orange-50 border-2 border-orange-200 rounded-3xl flex items-center px-6 gap-4 shadow-sm hover:bg-orange-100 transition group relative overflow-hidden">
-                    <div class="text-4xl">🔥</div>
+                <button @click="pickTodCard('dare')" class="w-full py-8 bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-200 dark:border-orange-800 rounded-3xl flex items-center px-6 gap-4 shadow-sm active:scale-95 transition group relative overflow-hidden">
+                    <div class="text-4xl group-hover:scale-110 transition">🔥</div>
                     <div class="text-left z-10">
-                        <div class="text-2xl font-bold text-orange-600">{{ t('dare') }}</div>
-                        <div class="text-xs text-orange-400">DARE</div>
+                        <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ t('dare') }}</div>
+                        <div class="text-xs text-orange-400 dark:text-orange-300/60 font-bold tracking-wider">DARE</div>
                     </div>
                 </button>
-                <button @click="resetGame" class="mt-8 text-sm opacity-50 dark:text-white">{{ t('back') }}</button>
+                <button @click="resetGame" class="mt-8 text-sm opacity-50 dark:text-white hover:opacity-100 transition">{{ t('back') }}</button>
             </div>
 
             <div v-else-if="gameState === 'game'" class="flex-1 flex flex-col relative pb-4" key="game">
-                <div v-if="currentCategory !== 'tod'" class="flex justify-center mb-4">
-                    <div class="glass px-4 py-1 rounded-full text-xs font-bold tracking-wider dark:text-white">
-                        {{ t('turn') }}: {{ currentPlayer }}
+                
+                <div v-if="currentCategory !== 'tod' && !isShuffling" class="flex justify-center mb-4">
+                    <div class="glass px-5 py-1.5 rounded-full text-sm font-bold tracking-wider dark:text-white shadow-sm">
+                        {{ t('turn') }}: <span class="text-brand-dark dark:text-brand-light">{{ currentPlayer }}</span>
+                    </div>
+                </div>
+
+                <div v-if="isShuffling" class="flex justify-center mb-4">
+                    <div class="glass px-5 py-1.5 rounded-full text-sm font-bold tracking-wider dark:text-white shadow-sm animate-pulse">
+                        {{ t('shuffling') }}...
                     </div>
                 </div>
 
                 <div class="flex-1 flex items-center justify-center perspective-1000 relative z-20">
-                    <transition name="slide-up" mode="out-in">
-                        <div :key="currentCard.id" 
+                    <transition name="fade" mode="out-in">
+                        
+                        <div v-if="isShuffling" 
+                             class="w-full aspect-[3/4] max-h-[520px] rounded-[32px] shadow-card p-8 flex flex-col items-center justify-center relative overflow-hidden bg-brand-dark dark:bg-gray-800 border-4 border-white/20 card-stack animate-shuffle">
+                             <div class="absolute inset-4 border-2 border-dashed border-white/30 rounded-[20px]"></div>
+                             <div class="text-6xl animate-spin-slow">♠️</div>
+                        </div>
+
+                        <div v-else
+                             :key="currentCard.id" 
                              @click="revealCard"
-                             class="w-full aspect-[3/4] max-h-[500px] rounded-[32px] shadow-card p-8 flex flex-col relative overflow-hidden cursor-pointer transition-colors duration-500 bg-white dark:bg-dark-surface border dark:border-gray-700"
+                             class="w-full aspect-[3/4] max-h-[520px] rounded-[32px] shadow-card p-8 flex flex-col relative overflow-hidden cursor-pointer transition-all duration-200 bg-white dark:bg-dark-surface border dark:border-gray-700 active:scale-[0.98] card-stack"
                              :class="cardBorderClass">
                             
-                            <div v-if="!isRevealed" class="absolute inset-0 z-30 flex flex-col items-center justify-center bg-white/10 backdrop-blur-md">
-                                <span class="text-4xl animate-float mb-2">👆</span>
-                                <p class="text-sm font-bold tracking-widest uppercase opacity-60 dark:text-white">Tap to Reveal</p>
+                            <div v-if="!isRevealed" class="absolute inset-0 z-30 flex flex-col items-center justify-center bg-white/10 backdrop-blur-xl">
+                                <span class="text-5xl animate-float mb-4 filter drop-shadow-md">👆</span>
+                                <p class="text-xs font-bold tracking-[0.2em] uppercase opacity-60 dark:text-white">Tap to Reveal</p>
                             </div>
                             
                             <div class="flex-1 flex flex-col justify-center items-center text-center transition-all duration-700"
                                  :class="{ 'blur-reveal': true, 'revealed': isRevealed }">
                                 
-                                <span v-if="currentCard.type === 'action' || currentCard.subType === 'dare'" class="mb-4 px-3 py-1 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full">DARE / ACTION</span>
-                                <span v-if="currentCard.subType === 'truth'" class="mb-4 px-3 py-1 bg-blue-100 text-blue-600 text-xs font-bold rounded-full">TRUTH</span>
+                                <span v-if="currentCard.type === 'action' || currentCard.subType === 'dare'" class="mb-6 px-3 py-1 bg-yellow-400 text-yellow-900 text-[10px] font-black tracking-widest rounded-full uppercase shadow-sm">ACTION / DARE</span>
+                                <span v-if="currentCard.subType === 'truth'" class="mb-6 px-3 py-1 bg-blue-100 text-blue-600 text-[10px] font-black tracking-widest rounded-full uppercase shadow-sm">TRUTH</span>
 
-                                <h3 class="font-serif font-medium leading-relaxed text-2xl md:text-3xl dark:text-white">
+                                <h3 class="font-serif font-medium leading-relaxed text-2xl md:text-3xl dark:text-white break-words w-full">
                                     {{ displayContent(currentCard.text) }}
                                 </h3>
 
                                 <div v-if="currentCard.time && isRevealed" class="mt-8">
-                                    <button @click.stop="toggleTimer" class="px-6 py-2 rounded-full border border-current opacity-70 font-mono text-xl flex items-center gap-2 dark:text-white">
+                                    <button @click.stop="toggleTimer" class="px-6 py-2 rounded-full border-2 border-current opacity-70 hover:opacity-100 font-mono text-xl flex items-center gap-2 dark:text-white transition active:scale-95">
                                         <span v-if="!timerRunning">▶ {{ currentCard.time }}s</span>
                                         <span v-else class="text-red-500 font-bold">{{ timerCount }}s</span>
                                     </button>
@@ -169,40 +252,41 @@
                             </div>
 
                             <div class="mt-auto flex justify-between items-end opacity-30 dark:text-gray-400">
-                                <span class="text-[10px] uppercase">{{ currentCategory === 'tod' ? 'Truth or Dare' : t('question') }}</span>
+                                <span class="text-[10px] uppercase font-bold tracking-widest">{{ currentCategory === 'tod' ? 'Truth or Dare' : t('question') }}</span>
+                                <span class="text-[10px]">{{ isLastCard ? 'END' : '>>>' }}</span>
                             </div>
                         </div>
                     </transition>
                 </div>
 
-                <div class="mt-6 flex flex-col gap-3 z-30">
+                <div class="mt-6 flex flex-col gap-3 z-30 transition-opacity duration-300" :class="{ 'opacity-0 pointer-events-none': isShuffling }">
                     <div class="flex gap-3">
-                        <button @click="sendReaction" class="w-14 h-14 rounded-2xl bg-white dark:bg-dark-surface shadow-soft flex items-center justify-center text-2xl active:scale-90 transition">❤️</button>
+                        <button @click="sendReaction" class="w-16 h-16 rounded-2xl bg-white dark:bg-dark-surface shadow-soft flex items-center justify-center text-2xl active:scale-90 transition border dark:border-gray-700">❤️</button>
                         <button @click="nextCard" :disabled="!isRevealed" 
-                                class="flex-1 h-14 rounded-2xl bg-brand-dark text-white font-bold shadow-soft flex justify-center items-center active:scale-95 disabled:opacity-50 transition">
-                            {{ isLastCard && currentCategory !== 'tod' ? t('finish') : t('next') }}
+                                class="flex-1 h-16 rounded-2xl bg-brand-dark text-white font-bold text-lg shadow-soft flex justify-center items-center active:scale-95 disabled:opacity-50 disabled:active:scale-100 transition">
+                            {{ isLastCard && currentCategory !== 'tod' && currentCategory !== 'mix' ? t('finish') : t('next') }}
                         </button>
                     </div>
                     
-                    <button v-if="isRevealed" @click="triggerPunishment" class="text-xs text-gray-400 dark:text-gray-500 underline py-2">
+                    <button v-if="isRevealed" @click="triggerPunishment" class="text-xs text-gray-400 dark:text-gray-500 underline py-2 hover:text-brand-dark transition">
                         {{ t('giveUp') }} ☠️
                     </button>
                 </div>
             </div>
 
             <div v-else-if="gameState === 'punish'" class="flex-1 flex flex-col justify-center items-center p-6" key="punish">
-                <div class="w-full bg-gray-900 text-white rounded-[32px] shadow-2xl p-8 flex flex-col relative overflow-hidden text-center animate-shake border border-gray-700">
-                    <div class="absolute top-0 left-0 w-full h-3 hazard-stripe"></div>
-                    <div class="absolute bottom-0 left-0 w-full h-3 hazard-stripe"></div>
-                    <div class="my-8">
-                        <div class="text-6xl mb-4">☠️</div>
-                        <h2 class="text-2xl font-bold font-serif mb-2 text-red-500">PUNISHMENT</h2>
-                        <h3 class="text-xl md:text-2xl font-bold leading-relaxed">
+                <div class="w-full bg-gray-900 text-white rounded-[32px] shadow-2xl p-8 flex flex-col relative overflow-hidden text-center animate-shake border-2 border-red-500/50">
+                    <div class="absolute top-0 left-0 w-full h-4 hazard-stripe opacity-80"></div>
+                    <div class="absolute bottom-0 left-0 w-full h-4 hazard-stripe opacity-80"></div>
+                    <div class="my-10">
+                        <div class="text-6xl mb-6">☠️</div>
+                        <h2 class="text-sm font-bold tracking-[0.3em] mb-4 text-red-500 uppercase">Punishment</h2>
+                        <h3 class="text-2xl md:text-3xl font-bold leading-relaxed">
                             {{ displayContent(currentPunishment) }}
                         </h3>
                     </div>
                 </div>
-                <button @click="resolvePunishment" class="mt-8 w-full py-4 bg-gray-800 text-white rounded-2xl font-bold border border-gray-600 active:scale-95 transition">
+                <button @click="resolvePunishment" class="mt-8 w-full py-4 bg-white text-black dark:bg-gray-700 dark:text-white rounded-2xl font-bold border border-gray-200 dark:border-gray-600 shadow-lg active:scale-95 transition">
                     {{ t('accept') }}
                 </button>
             </div>
@@ -216,7 +300,7 @@
 <script>
     const { createApp, ref, computed, onMounted, watch } = Vue;
 
-    // --- 完整題庫 (雙語) ---
+    // --- 1. 完整修復後的題庫 (DB) ---
     const DB = {
         light: [
             { text: { zh: "如果這輩子只能吃一種食物，你會選什麼？", en: "If you could only eat one food for the rest of your life, what would it be?" }, type: "question" },
@@ -227,20 +311,34 @@
             { text: { zh: "如果中了一億樂透，你第一件會買的東西是什麼？", en: "If you won 100 million in the lottery, what is the first thing you would buy?" }, type: "question" },
             { text: { zh: "你最奇怪的一個小習慣或怪癖是什麼？", en: "What is your weirdest habit or quirk?" }, type: "question" },
             { text: { zh: "如果你可以擁有一種超能力，你想要什麼？", en: "If you could have one superpower, what would it be?" }, type: "question" },
-            { text: { zh: "如果世界末日來了，你只能帶三樣東西逃跑，你會帶什麼？", en: "If the apocalypse came and you could only take three things, what would they be?" }, type: "question" },
-            { text: { zh: "你洗澡的時候會唱歌嗎？如果會，通常唱什麼歌？", en: "Do you sing in the shower? If so, what do you usually sing?" }, type: "question" },
-            { text: { zh: "你最喜歡的季節是哪一個？", en: "What is your favorite season?" }, type: "question" },
-            { text: { zh: "你比較喜歡貓還是狗？為什麼？", en: "Do you prefer cats or dogs? Why?" }, type: "question" },
-            { text: { zh: "你心情不好的時候，通常會想吃什麼？", en: "What do you usually want to eat when you are in a bad mood?" }, type: "question" },
-            { text: { zh: "High Five：和對方來一個最有默契的擊掌。", en: "High Five: Give each other your best high five." }, type: "action" },
-            { text: { zh: "扮醜自拍：用對方的手機拍一張自己最醜的鬼臉照。", en: "Ugly Selfie: Take the ugliest selfie possible using your partner's phone." }, type: "action" },
-            { text: { zh: "如果你能變成卡通人物一天，你想變成誰？", en: "If you could be a cartoon character for a day, who would it be?" }, type: "question" },
-           { text: { zh: "如果能時間旅行，你想去未來還是過去？", en: "Time travel: future or past?" }, type: "question" },
-            { text: { zh: "你最討厭的家務是什麼？願意為我做嗎？", en: "Worst chore? Would you do it for me?" }, type: "question" },
-            { text: { zh: "手指遊戲：比賽誰的手指比較長。", en: "Finger length contest." }, type: "action" },
-            { text: { zh: "假裝陌生人：用 pickup line 搭訕對方。", en: "Pretend to be strangers: use a pickup line." }, type: "action" },
-            { text: { zh: "幸運抽獎：閉眼隨機摸對方臉上一個部位，誇它。", en: "Lucky draw: touch a random face part and compliment it." }, type: "action" }
-   ],
+            { text: { zh: "你最喜歡的電影是什麼？為什麼？", en: "What is your favorite movie and why?" }, type: "question" },
+            { text: { zh: "你聽過最爛的笑話是什麼？", en: "What is the worst joke you've ever heard?" }, type: "question" },
+            { text: { zh: "如果是卡拉OK之夜，你的必點歌曲是哪首？", en: "What is your go-to karaoke song?" }, type: "question" },
+            { text: { zh: "你寧願能夠飛行還是隱形？", en: "Would you rather be able to fly or be invisible?" }, type: "question" },
+            { text: { zh: "你小時候最喜歡的玩具是什麼？", en: "What was your favorite toy growing up?" }, type: "question" },
+            { text: { zh: "如果你的生活被拍成電影，你會選誰來演你？", en: "If a movie was made about your life, who would play you?" }, type: "question" },
+            { text: { zh: "你是早起的人還是夜貓子？", en: "Are you an early bird or a night owl?" }, type: "question" },
+            { text: { zh: "如果不用工作，你會如何度過一天？", en: "How would you spend your day if you didn't have to work?" }, type: "question" },
+            { text: { zh: "你收過最奇怪的禮物是什麼？", en: "What is the weirdest gift you've ever received?" }, type: "question" },
+            { text: { zh: "形容一下你完美的早餐。", en: "Describe your perfect breakfast." }, type: "question" },
+            { text: { zh: "你最近沈迷於什麼（劇集、遊戲、嗜好）？", en: "What have you been obsessed with lately?" }, type: "question" },
+            { text: { zh: "眨眼比賽：看誰能堅持最久不眨眼。", en: "Staring contest: See who can go the longest without blinking." }, type: "action", time: 30 },
+            { text: { zh: "拇指摔角：來一場拇指大戰！", en: "Thumb war: Let's have a thumb wrestling match!" }, type: "action" },
+            { text: { zh: "模仿秀：模仿一個名人的聲音讓對方猜。", en: "Impression: Impersonate a celebrity for the other to guess." }, type: "action" },
+            { text: { zh: "剪刀石頭布：輸的人要被彈額頭。", en: "Rock Paper Scissors: Loser gets a forehead flick." }, type: "action" },
+            { text: { zh: "互畫像：用30秒快速畫出對方的臉。", en: "Portrait: Draw each other's face in 30 seconds." }, type: "action", time: 30 },
+            { text: { zh: "你最害怕的昆蟲或動物是什麼？", en: "What insect or animal are you most afraid of?" }, type: "question" },
+            { text: { zh: "【交換卡】互換手機 1 分鐘，不能打開任何通訊軟體，只能看相簿。", en: "[Swap] Swap phones for 1 min. Photos only, no messaging apps." }, type: "action", time: 60 },
+            { text: { zh: "如果你被困在無人島，你只能帶三樣東西，你會帶什麼？", en: "If you were stranded on a desert island, what 3 items would you bring?" }, type: "question" },
+            { text: { zh: "你比較喜歡山還是海？為什麼？", en: "Do you prefer the mountains or the ocean? Why?" }, type: "question" },
+            { text: { zh: "你相信有外星人嗎？", en: "Do you believe in aliens?" }, type: "question" },
+            { text: { zh: "你洗澡的時候是先洗頭還是先洗身體？", en: "Do you wash your hair or body first in the shower?" }, type: "question" },
+            { text: { zh: "如果你能瞬間學會一種語言，你會選哪種？", en: "If you could instantly learn any language, which one would it be?" }, type: "question" },
+            { text: { zh: "你比較喜歡咖啡還是茶？", en: "Do you prefer coffee or tea?" }, type: "question" },
+            { text: { zh: "如果你的房子著火了（家人寵物都安全），你會最後搶救什麼東西？", en: "If your house was on fire (family/pets consist safe), what one item would you save?" }, type: "question" },
+            { text: { zh: "比手畫腳：用肢體動作表演一種職業讓對方猜。", en: "Charades: Act out a profession for your partner to guess." }, type: "action", time: 60 },
+            { text: { zh: "誰笑誰輸：雙方口含一口水，看誰先笑出來。", en: "Try Not To Laugh: Both hold water in mouth, first to laugh loses." }, type: "action" }
+        ],
 
         medium: [
             { text: { zh: "我們第一次約會時，你心裡在想什麼？", en: "What were you thinking during our first date?" }, type: "question" },
@@ -256,9 +354,35 @@
             { text: { zh: "鼻尖磨蹭：用你的鼻子磨蹭對方的鼻子 10 秒鐘。", en: "Nose Rub: Rub your nose against your partner's nose for 10 seconds." }, type: "action", time: 10 },
             { text: { zh: "專屬按摩：幫對方按摩肩膀或手掌 1 分鐘。", en: "Massage: Massage your partner's shoulders or hands for 1 minute." }, type: "action", time: 60 },
             { text: { zh: "耳邊低語：在對方耳邊用氣音說一句「我愛你」。", en: "Whisper: Whisper 'I love you' in your partner's ear." }, type: "action" },
-            { text: { zh: "在我生病時，你最想為我做什麼？", en: "What would you do if I was sick?" }, type: "question" },
-            { text: { zh: "描述我們理想的週末約會。", en: "Describe our perfect weekend date." }, type: "question" }
- ],
+            { text: { zh: "我做過什麼事讓你覺得很驚喜？", en: "What have I done that surprised you the most?" }, type: "question" },
+            { text: { zh: "如果有來生，你還會選擇和我在一起嗎？", en: "If there is an afterlife, would you choose to be with me again?" }, type: "question" },
+            { text: { zh: "你最喜歡我看你的眼神是什麼時候？", en: "When do you like the way I look at you the most?" }, type: "question" },
+            { text: { zh: "形容一下我最讓你心動的穿著。", en: "Describe the outfit of mine that attracts you the most." }, type: "question" },
+            { text: { zh: "我們上次大笑到肚子痛是因為什麼？", en: "What made us laugh until our stomachs hurt last time?" }, type: "question" },
+            { text: { zh: "你覺得我改變了你什麼？", en: "How do you think I have changed you?" }, type: "question" },
+            { text: { zh: "擁抱挑戰：維持擁抱姿勢，並說出對方三個優點。", en: "Hug Challenge: Hold a hug and say 3 things you like about each other." }, type: "action" },
+            { text: { zh: "你覺得我們誰比較會撒嬌？", en: "Who do you think is more affectionate/clingy?" }, type: "question" },
+            { text: { zh: "你最懷念我們剛認識時的什麼感覺？", en: "What do you miss most about when we first met?" }, type: "question" },
+            { text: { zh: "我們的關係中最讓你感到「安全感」的是什麼？", en: "What gives you the most sense of security in our relationship?" }, type: "question" },
+            { text: { zh: "閉眼猜物：讓對方閉眼，拿一個物品讓他摸並猜是什麼。", en: "Blind Guess: Close eyes and guess the object by touch." }, type: "action" },
+            { text: { zh: "額頭碰額頭，保持安靜 20 秒。", en: "Forehead touch: Keep foreheads together in silence for 20s." }, type: "action", time: 20 },
+            { text: { zh: "我做什麼表情會讓你無法拒絕我？", en: "What expression of mine makes you unable to say no?" }, type: "question" },
+            { text: { zh: "【自由題】請對方隨意問你一個問題，你必須誠實回答。", en: "[Free Card] Ask me anything. I must answer honestly." }, type: "question" },
+            { text: { zh: "你覺得我們的「愛之語」（Love Language）分別是什麼？", en: "What do you think our respective 'Love Languages' are?" }, type: "question" },
+            { text: { zh: "你覺得我在你朋友眼中是什麼樣的人？", en: "How do you think your friends perceive me?" }, type: "question" },
+            { text: { zh: "在什麼時刻你會特別強烈地感覺到「被愛」？", en: "At what moment do you feel most intensely 'loved'?" }, type: "question" },
+            { text: { zh: "你覺得我們最近一次有意義的對話是關於什麼？", en: "What was our last meaningful conversation about?" }, type: "question" },
+            { text: { zh: "如果我們要一起去學習一項新技能，你想學什麼？", en: "If we were to learn a new skill together, what would it be?" }, type: "question" },
+            { text: { zh: "你覺得我生氣的時候像什麼？（可愛或可怕）", en: "What am I like when I'm angry? (Cute or scary?)" }, type: "question" },
+            { text: { zh: "有哪一首歌會讓你立刻想起我？", en: "Is there a song that immediately reminds you of me?" }, type: "question" },
+            { text: { zh: "你最喜歡我們一起做的哪一件平凡小事（例如倒垃圾、逛超市）？", en: "What mundane thing do you enjoy doing with me (e.g., grocery shopping)?" }, type: "question" },
+            { text: { zh: "如果我們可以重新過一次某個約會，你會選哪一次？", en: "If we could relive one date, which one would it be?" }, type: "question" },
+            { text: { zh: "你覺得我們誰比較會照顧人？", en: "Who do you think is the better caregiver between us?" }, type: "question" },
+            { text: { zh: "膝枕：躺在對方的大腿上，讓對方幫你掏耳朵或摸摸頭。", en: "Lap Pillow: Lay on partner's lap and get ears cleaned or head patted." }, type: "action", time: 60 },
+            { text: { zh: "搔癢挑戰：輕輕搔對方的手心或脖子，看誰先縮手。", en: "Tickle: Gently tickle partner's palm or neck." }, type: "action" },
+            { text: { zh: "背我走一圈：在家裡背著對方走一圈。", en: "Piggyback Ride: Give your partner a piggyback ride around the room." }, type: "action" }
+        ],
+
         deep: [
             { text: { zh: "你覺得「幸福的家庭」最重要的三個元素是什麼？", en: "What are the three most important elements of a happy family?" }, type: "question" },
             { text: { zh: "假如我們吵架了，你希望我怎麼打破僵局？", en: "If we have a fight, how would you like me to break the ice?" }, type: "question" },
@@ -271,8 +395,66 @@
             { text: { zh: "如果我們在金錢觀上發生嚴重分歧，你覺得該怎麼解決？", en: "If we have a serious disagreement about money, how should we resolve it?" }, type: "question" },
             { text: { zh: "你人生中最大的恐懼是什麼？", en: "What is your biggest fear in life?" }, type: "question" },
             { text: { zh: "心跳連結：把手放在對方左胸口，安靜感受心跳 30 秒。", en: "Heartbeat: Place your hand on your partner's chest and feel their heartbeat for 30s." }, type: "action", time: 30 },
-            { text: { zh: "無聲告白：不能說話，用肢體語言表達「我愛你」。", en: "Silent Love: Without speaking, use body language to express 'I love you'." }, type: "action" }
+            { text: { zh: "無聲告白：不能說話，用肢體語言表達「我愛你」。", en: "Silent Love: Without speaking, use body language to express 'I love you'." }, type: "action" },
+            { text: { zh: "你人生中最大的遺憾是什麼？", en: "What is your biggest regret in life?" }, type: "question" },
+            { text: { zh: "什麼樣的事情會讓你對一個人徹底失望？", en: "What would make you completely lose faith in someone?" }, type: "question" },
+            { text: { zh: "你覺得愛是一種感覺，還是一種選擇？", en: "Do you think love is a feeling or a choice?" }, type: "question" },
+            { text: { zh: "如果可以知道你確切的死亡時間，你會想知道嗎？", en: "If you could know the exact time of your death, would you want to?" }, type: "question" },
+            { text: { zh: "你覺得自己是一個好人嗎？為什麼？", en: "Do you consider yourself a good person? Why?" }, type: "question" },
+            { text: { zh: "什麼是你童年時缺乏，但希望能給自己孩子的？", en: "What did you lack in childhood that you want to give your kids?" }, type: "question" },
+            { text: { zh: "你上一次哭是什麼時候？為了什麼？", en: "When was the last time you cried and why?" }, type: "question" },
+            { text: { zh: "對於「出軌」，你的底線和定義是什麼？", en: "What is your definition and bottom line for 'cheating'?" }, type: "question" },
+            { text: { zh: "你覺得錢能不能買到幸福？", en: "Do you think money can buy happiness?" }, type: "question" },
+            { text: { zh: "你最希望改掉自己個性上的哪個缺點？", en: "Which personality flaw do you most want to change?" }, type: "question" },
+            { text: { zh: "如果你的父母不喜歡我，你會怎麼做？", en: "What would you do if your parents didn't like me?" }, type: "question" },
+            { text: { zh: "你相信命運嗎？還是覺得一切掌握在自己手裡？", en: "Do you believe in fate, or that we control our own destiny?" }, type: "question" },
+            { text: { zh: "在你心中，事業和家庭的優先順序是如何？", en: "How do you prioritize career vs family in your heart?" }, type: "question" },
+            { text: { zh: "你覺得完美的「一天」是如何度過的？", en: "How would you spend a 'perfect' day?" }, type: "question" },
+            { text: { zh: "有什麼秘密是你從來沒有告訴過任何人的？", en: "Is there a secret you have never told anyone?" }, type: "question" },
+            { text: { zh: "如果我們無法生育，你會考慮領養還是不生？", en: "If we couldn't have kids, would you consider adoption or no kids?" }, type: "question" },
+            { text: { zh: "你覺得一段長久的關係最需要犧牲什麼？", en: "What do you think requires the most sacrifice in a long-term relationship?" }, type: "question" },
+            { text: { zh: "當你感到壓力巨大時，你希望我如何陪伴你？", en: "When you are stressed, how do you want me to support you?" }, type: "question" },
+            { text: { zh: "你覺得自己最脆弱的一面是什麼？", en: "What do you think is your most vulnerable side?" }, type: "question" },
+            { text: { zh: "深情對視：不準笑，不準說話，對視 1 分鐘。", en: "Deep Gaze: No laughing, no talking. Stare for 1 min." }, type: "action", time: 60 },
+            { text: { zh: "你覺得什麼是「原諒」？你容易原諒別人嗎？", en: "What is 'forgiveness'? Do you forgive easily?" }, type: "question" },
+            { text: { zh: "你覺得我們變老之後，最讓你擔心的健康或生活問題是什麼？", en: "What worries you most about health or life as we age?" }, type: "question" },
+            { text: { zh: "你認為「無條件的愛」真的存在嗎？", en: "Do you believe 'unconditional love' truly exists?" }, type: "question" },
+            { text: { zh: "有什麼童年創傷是你覺得至今還影響著你的？", en: "Is there any childhood trauma that you feel still affects you today?" }, type: "question" },
+            { text: { zh: "你覺得人生的意義是什麼？", en: "What do you think is the meaning of life?" }, type: "question" },
+            { text: { zh: "如果必須在我與你的夢想工作之間做選擇，你會怎麼權衡？", en: "If you had to choose between me and your dream job, how would you weigh it?" }, type: "question" },
+            { text: { zh: "你希望死後人們怎麼記得你？", en: "How do you want to be remembered after you die?" }, type: "question" },
+            { text: { zh: "你覺得我們目前的性生活滿足嗎？如果不滿足，是哪裡？", en: "Are you satisfied with our sex life? If not, what's missing?" }, type: "question" },
+            { text: { zh: "你曾經對我有過很深的怨恨嗎？是什麼事？", en: "Have you ever held deep resentment towards me? About what?" }, type: "question" },
+            { text: { zh: "你覺得在一段感情中，精神出軌和肉體出軌哪個更嚴重？", en: "Which is worse in a relationship: emotional or physical cheating?" }, type: "question" },
+            { text: { zh: "你覺得我們在教育下一代（或未來寵物）的觀念上有一致嗎？", en: "Do we share the same values on raising kids (or pets)?" }, type: "question" },
+            { text: { zh: "當你情緒低落時，你傾向獨處還是尋求陪伴？", en: "When you are down, do you prefer solitude or company?" }, type: "question" },
+            { text: { zh: "你覺得我們現在的溝通模式健康嗎？有什麼需要改進？", en: "Is our communication style healthy? What needs improvement?" }, type: "question" }
         ],
+
+        seasonal: [
+            { text: { zh: "【情人節】描述一下你心中最浪漫的約會場景。", en: "[Valentine's] Describe the most romantic date scenario in your mind." }, type: "question" },
+            { text: { zh: "【情人節】你覺得送禮物比較重要，還是陪伴比較重要？", en: "[Valentine's] Do you think giving gifts or quality time is more important?" }, type: "question" },
+            { text: { zh: "【聖誕節】你收過最棒的聖誕禮物是什麼？", en: "[Christmas] What is the best Christmas gift you've ever received?" }, type: "question" },
+            { text: { zh: "【聖誕節】如果我們能在聖誕樹下接吻，你希望背景音樂是什麼？", en: "[Christmas] If we could kiss under the mistletoe, what background music would you want?" }, type: "question" },
+            { text: { zh: "【跨年】回顧這一年，你最感謝我為你做的哪一件事？", en: "[New Year] Looking back, what is the one thing I did that you are most grateful for?" }, type: "question" },
+            { text: { zh: "【跨年】明年我們一起完成的一個目標是什麼？", en: "[New Year] What is one goal we should achieve together next year?" }, type: "question" },
+            { text: { zh: "【七夕】如果你是牛郎/織女，你會願意等待對方一年見一次嗎？", en: "[Tanabata] Would you be willing to wait a whole year to see me just once?" }, type: "question" },
+            { text: { zh: "【生日】你記得我去年的生日是怎麼過的嗎？", en: "[Birthday] Do you remember how I spent my birthday last year?" }, type: "question" },
+            { text: { zh: "【週年】我們在一起這段時間，哪一個瞬間讓你覺得「有你真好」？", en: "[Anniversary] In our time together, which moment made you think 'it's so good to have you'?" }, type: "question" },
+            { text: { zh: "【夏日】如果要一起去海邊，你會想幫我擦防曬油嗎？", en: "[Summer] If we go to the beach, would you help me apply sunscreen?" }, type: "question" },
+            { text: { zh: "【冬日】寒流來襲，你喜歡用什麼方式取暖（擁抱、火鍋、泡湯）？", en: "[Winter] When it's freezing, how do you like to warm up (cuddles, hot pot, hot spring)?" }, type: "question" },
+            { text: { zh: "【節日挑戰】公主抱深蹲 3 下，大喊「節日快樂」！", en: "[Holiday Challenge] Princess carry squat 3 times and yell 'Happy Holidays'!" }, type: "action", time: 20 },
+            { text: { zh: "【節日挑戰】用嘴巴餵對方吃一顆巧克力或糖果。", en: "[Holiday Challenge] Feed your partner a chocolate or candy using your mouth." }, type: "action" },
+            // --- 之前這裡少了一個逗號，已修復 ---
+            { text: { zh: "【萬聖節】如果我們要穿情侶裝扮，你想扮成什麼？", en: "[Halloween] If we were to wear couple costumes, what would you want to be?" }, type: "question" },
+            { text: { zh: "【萬聖節】你比較怕鬼屋，還是怕看恐怖片？", en: "[Halloween] Are you more scared of haunted houses or horror movies?" }, type: "question" },
+            { text: { zh: "【感恩節】除了家人朋友，你最想感謝生命中的什麼事物？", en: "[Thanksgiving] Besides family/friends, what are you most grateful for?" }, type: "question" },
+            { text: { zh: "【下雨天】外面下大雨時，你最想在家和我一起做什麼？", en: "[Rainy Day] When it's pouring outside, what do you want to do at home with me?" }, type: "question" },
+            { text: { zh: "【旅行】如果我們去公路旅行，你會想負責開車還是負責選音樂？", en: "[Road Trip] If we go on a road trip, do you want to drive or be the DJ?" }, type: "question" },
+            { text: { zh: "【春節】你最怕被親戚問到什麼問題？", en: "[Lunar New Year] What question from relatives do you dread the most?" }, type: "question" },
+            { text: { zh: "【櫻花季】如果要在櫻花樹下野餐，你會準備什麼食物？", en: "[Cherry Blossom] What food would you prepare for a picnic under cherry blossoms?" }, type: "question" }
+        ],
+
         truth: [
             { text: { zh: "現在心裡有沒有對我不滿的一件事？是什麼？", en: "Is there anything you are currently dissatisfied with about me? What is it?" }, subType: "truth" },
             { text: { zh: "說出你前任做過最讓你受不了的一件事。", en: "What is the most unbearable thing your ex ever did?" }, subType: "truth" },
@@ -283,8 +465,45 @@
             { text: { zh: "如果我們分手了，你會想挽回嗎？", en: "If we broke up, would you try to get me back?" }, subType: "truth" },
             { text: { zh: "你覺得我哪一個朋友最有吸引力？", en: "Which of my friends do you find most attractive?" }, subType: "truth" },
             { text: { zh: "最近一次讓你產生性幻想的對象是誰（除了我）？", en: "Who was the last person you had a sexual fantasy about (besides me)?" }, subType: "truth" },
-            { text: { zh: "你最受不了我的一個生活習慣是什麼？", en: "What is the one habit of mine you can't stand the most?" }, subType: "truth" }
+            { text: { zh: "你最受不了我的一個生活習慣是什麼？", en: "What is the one habit of mine you can't stand the most?" }, subType: "truth" },
+            { text: { zh: "你曾經對朋友說過我的壞話嗎？", en: "Have you ever badmouthed me to your friends?" }, subType: "truth" },
+            { text: { zh: "這輩子你做過最違法或最危險的事是什麼？", en: "What's the most illegal or dangerous thing you've ever done?" }, subType: "truth" },
+            { text: { zh: "你有沒有假裝高潮過？", en: "Have you ever faked an orgasm?" }, subType: "truth" },
+            { text: { zh: "如果不會被發現，你會想嘗試一夜情嗎？", en: "Would you try a one-night stand if you wouldn't get caught?" }, subType: "truth" },
+            { text: { zh: "你心裡是否有放不下的人？", en: "Is there anyone you still can't let go of?" }, subType: "truth" },
+            { text: { zh: "你曾經同時喜歡過兩個人嗎？", en: "Have you ever liked two people at the same time?" }, subType: "truth" },
+            { text: { zh: "你覺得我的家人哪個最難相處？", en: "Which of my family members do you find hardest to get along with?" }, subType: "truth" },
+            { text: { zh: "你這週有沒有說過謊？是什麼？", en: "Have you told a lie this week? What was it?" }, subType: "truth" },
+            { text: { zh: "如果可以換掉我身上的一個部位，你想換掉什麼？", en: "If you could change one body part of mine, what would it be?" }, subType: "truth" },
+            { text: { zh: "你的瀏覽器紀錄裡最尷尬的東西是什麼？", en: "What's the most embarrassing thing in your browser history?" }, subType: "truth" },
+            { text: { zh: "你曾經後悔和我在一起過嗎？哪怕是一瞬間？", en: "Have you ever regretted being with me? Even for a second?" }, subType: "truth" },
+            { text: { zh: "你覺得你比我聰明嗎？", en: "Do you think you are smarter than me?" }, subType: "truth" },
+            { text: { zh: "你有沒有幻想過我的好朋友？", en: "Have you ever fantasized about my best friend?" }, subType: "truth" },
+            { text: { zh: "你上一次自慰是什麼時候？", en: "When was the last time you masturbated?" }, subType: "truth" },
+            { text: { zh: "你有什麼奇怪的性癖好是不敢告訴我的？", en: "Do you have any kinks you're afraid to tell me?" }, subType: "truth" },
+            { text: { zh: "如果我變胖 20 公斤，你還會愛我嗎？", en: "Would you still love me if I gained 20kg?" }, subType: "truth" },
+            { text: { zh: "你覺得我們誰的吻技比較好？", en: "Who do you think is the better kisser?" }, subType: "truth" },
+            { text: { zh: "你目前最大的債務或財務秘密是什麼？", en: "What is your biggest debt or financial secret right now?" }, subType: "truth" },
+            { text: { zh: "你曾經偷看過別人的日記或訊息嗎？", en: "Have you ever read someone's diary or messages?" }, subType: "truth" },
+            { text: { zh: "你覺得自己長得好看嗎？給自己打幾分（1-10）？", en: "Do you think you are good looking? Rate yourself (1-10)." }, subType: "truth" },
+            { text: { zh: "你最討厭我穿哪一件衣服？", en: "Which item of my clothing do you hate the most?" }, subType: "truth" },
+            { text: { zh: "如果能和明星睡一晚，你會選誰？", en: "If you could sleep with a celebrity, who would it be?" }, subType: "truth" },
+            { text: { zh: "你曾經在我們親熱時想著別人嗎？", en: "Have you ever thought about someone else while we were intimate?" }, subType: "truth" },
+            { text: { zh: "你有沒有刪除過任何怕我看到的訊息？", en: "Have you ever deleted a message you were afraid I'd see?" }, subType: "truth" },
+            { text: { zh: "你覺得我們的性生活頻率太高、太低還是剛好？", en: "Do you think our sex frequency is too high, too low, or just right?" }, subType: "truth" },
+            { text: { zh: "如果你可以合法地殺掉一個人，你會殺誰？", en: "If you could legally kill one person, who would it be?" }, subType: "truth" },
+            { text: { zh: "你曾經假裝喜歡我送的禮物嗎？是什麼？", en: "Have you ever pretended to like a gift I gave you? What was it?" }, subType: "truth" },
+            { text: { zh: "你最嫉妒我哪一點？", en: "What are you most jealous of about me?" }, subType: "truth" },
+            { text: { zh: "你曾經對同事動過心嗎？", en: "Have you ever had a crush on a coworker?" }, subType: "truth" },
+            { text: { zh: "你曾經傳過裸照給別人嗎？", en: "Have you ever sent nudes to anyone?" }, subType: "truth" },
+            { text: { zh: "你覺得開放式關係（Open Relationship）是可以接受的嗎？", en: "Do you think an open relationship is acceptable?" }, subType: "truth" },
+            { text: { zh: "你上次對我感到極度厭煩是什麼時候？", en: "When was the last time you were extremely annoyed with me?" }, subType: "truth" },
+            { text: { zh: "如果我現在求婚（或再次求婚），你會毫不猶豫答應嗎？", en: "If I proposed right now (or again), would you say yes without hesitation?" }, subType: "truth" },
+            { text: { zh: "你有沒有跟別人抱怨過我們的床事？", en: "Have you ever complained about our sex life to others?" }, subType: "truth" },
+            { text: { zh: "你覺得你最噁心的一個愛好是什麼？", en: "What do you think is your grossest hobby?" }, subType: "truth" },
+            { text: { zh: "如果你的前任現在打電話說想見你，你會去嗎？", en: "If your ex called now and wanted to see you, would you go?" }, subType: "truth" }
         ],
+
         dare: [
             { text: { zh: "模仿我生氣時候的樣子，直到我滿意為止。", en: "Imitate how I look when I'm angry until I'm satisfied." }, subType: "dare" },
             { text: { zh: "公主抱我（或背我）深蹲 5 下。", en: "Princess carry (or piggyback) me and do 5 squats." }, subType: "dare", time: 30 },
@@ -295,8 +514,43 @@
             { text: { zh: "跳一段性感的舞蹈，持續 30 秒。", en: "Do a sexy dance for 30 seconds." }, subType: "dare", time: 30 },
             { text: { zh: "和我對視 1 分鐘，誰先笑誰就輸。", en: "Stare contest for 1 minute. First to laugh loses." }, subType: "dare", time: 60 },
             { text: { zh: "脫掉一件身上的衣物（飾品不算）。", en: "Remove one item of clothing (accessories don't count)." }, subType: "dare" },
-            { text: { zh: "用屁股寫字，寫出我的名字。", en: "Write my name using your butt." }, subType: "dare" }
+            { text: { zh: "用屁股寫字，寫出我的名字。", en: "Write my name using your butt." }, subType: "dare" },
+            { text: { zh: "讓我幫你化妝（或亂畫臉）。", en: "Let me do your makeup (or draw on your face)." }, subType: "dare" },
+            { text: { zh: "用誘惑的聲音朗讀一段食品成分表。", en: "Read a food ingredient label in a seductive voice." }, subType: "dare" },
+            { text: { zh: "讓我選一張你的醜照發到你的社群限時動態。", en: "Let me post an ugly photo of you on your Story." }, subType: "dare" },
+            { text: { zh: "舔一下我的腳趾（或手指）。", en: "Lick my toe (or finger)." }, subType: "dare" },
+            { text: { zh: "讓我搔癢你 30 秒，不能躲。", en: "Let me tickle you for 30s, no hiding." }, subType: "dare", time: 30 },
+            { text: { zh: "用屁股寫字，寫出「我愛你」。", en: "Write 'I Love You' with your butt." }, subType: "dare" },
+            { text: { zh: "在地上像毛毛蟲一樣爬行一段距離。", en: "Crawl on the floor like a caterpillar." }, subType: "dare" },
+            { text: { zh: "讓我聞你的腋下。", en: "Let me smell your armpit." }, subType: "dare" },
+            { text: { zh: "對著窗外大喊「我是笨蛋」！", en: "Yell 'I am an idiot' out the window!" }, subType: "dare" },
+            { text: { zh: "含一口水，讓我講笑話逗你，不能噴出來。", en: "Hold water in mouth, let me tell jokes. Don't spit." }, subType: "dare" },
+            { text: { zh: "用你的嘴脫掉我的一隻襪子。", en: "Take off one of my socks with your mouth." }, subType: "dare" },
+            { text: { zh: "閉眼讓我餵你吃一樣冰箱裡的東西。", en: "Close eyes and let me feed you something from the fridge." }, subType: "dare" },
+            { text: { zh: "表演一段鋼管舞（假設路燈或門框是鋼管）。", en: "Perform a pole dance (use a doorway)." }, subType: "dare" },
+            { text: { zh: "用饒舌的方式誇獎我。", en: "Compliment me using a rap freestyle." }, subType: "dare" },
+            { text: { zh: "讓我檢查你的瀏覽紀錄。", en: "Let me check your browsing history." }, subType: "dare" },
+            { text: { zh: "模仿一隻猴子 30 秒。", en: "Act like a monkey for 30 seconds." }, subType: "dare", time: 30 },
+            { text: { zh: "把你的手機桌布換成我的鬼臉照一天。", en: "Change your wallpaper to my funny face for a day." }, subType: "dare" },
+            { text: { zh: "做 20 個深蹲。", en: "Do 20 squats." }, subType: "dare" },
+            { text: { zh: "讓我坐在你的背上做伏地挺身（如果做不到就撐著）。", en: "Push-ups with me on your back (or just hold plank)." }, subType: "dare" },
+            { text: { zh: "發出一種奇怪的呻吟聲。", en: "Make a weird moaning sound." }, subType: "dare" },
+            { text: { zh: "跳一段最尷尬的舞。", en: "Do your most embarrassing dance move." }, subType: "dare" },
+            { text: { zh: "深情的對著牆壁告白。", en: "Confess your love passionately to the wall." }, subType: "dare" },
+            { text: { zh: "讓我坐在你的腿上 1 分鐘。", en: "Let me sit on your lap for 1 minute." }, subType: "dare", time: 60 },
+            { text: { zh: "把一顆冰塊放進你的衣服裡，直到融化。", en: "Put an ice cube down your shirt until it melts." }, subType: "dare" },
+            { text: { zh: "戴上眼罩，讓我用手指在你身上寫字讓你猜。", en: "Blindfold yourself and guess what I write on your body with my finger." }, subType: "dare" },
+            { text: { zh: "穿上我的一件衣服（無論多緊或多鬆）。", en: "Put on one item of my clothing (no matter how tight/loose)." }, subType: "dare" },
+            { text: { zh: "用嘴巴餵我吃水果。", en: "Feed me fruit using your mouth." }, subType: "dare" },
+            { text: { zh: "在我的耳邊發出性感的呻吟聲。", en: "Moan seductively in my ear." }, subType: "dare" },
+            { text: { zh: "讓我用口紅（或筆）在你臉上畫愛心。", en: "Let me draw a heart on your face with lipstick (or pen)." }, subType: "dare" },
+            { text: { zh: "講一句最肉麻的情話，不能笑。", en: "Say the cheesiest pick-up line without laughing." }, subType: "dare" },
+            { text: { zh: "讓我拍一張你剛睡醒（或裝睡）的樣子。", en: "Let me take a photo of you acting like you just woke up." }, subType: "dare" },
+            { text: { zh: "模仿電影裡的激情橋段（隔空表演）。", en: "Reenact a passionate movie scene (air acting)." }, subType: "dare" },
+            { text: { zh: "讓我隨機發送一個貼圖給你最近聊天的人。", en: "Let me send a random sticker to your most recent chat." }, subType: "dare" },
+            { text: { zh: "對著鏡子誇獎自己的身材 30 秒。", en: "Compliment your own body in the mirror for 30s." }, subType: "dare", time: 30 }
         ],
+
         punishments: [
             { zh: "罰喝一杯水", en: "Drink a glass of water" },
             { zh: "伏地挺身 10 下", en: "Do 10 push-ups" },
@@ -305,7 +559,24 @@
             { zh: "幫對方吹頭髮", en: "Dry your partner's hair next time" },
             { zh: "交出手機檢查 3 分鐘", en: "Hand over phone for 3 min inspection" },
             { zh: "不能說話 3 分鐘", en: "No speaking for 3 minutes" },
-            { zh: "幫對方按摩 5 分鐘", en: "Massage partner for 5 minutes" }
+            { zh: "幫對方按摩 5 分鐘", en: "Massage partner for 5 minutes" },
+            { zh: "罰站 5 分鐘", en: "Stand in the corner for 5 mins" },
+            { zh: "大聲唱一首歌", en: "Sing a song loudly" },
+            { zh: "模仿對方的動作 1 分鐘", en: "Mimic partner's moves for 1 min" },
+            { zh: "親吻對方的腳背", en: "Kiss partner's foot" },
+            { zh: "做 20 個開合跳", en: "Do 20 jumping jacks" },
+            { zh: "學狗叫 3 聲", en: "Bark like a dog 3 times" },
+            { zh: "公主抱對方繞客廳一圈", en: "Princess carry partner around the room" },
+            { zh: "親對方的臉頰 10 下", en: "Kiss partner's cheek 10 times" },
+            { zh: "今天接下來的時間都要聽對方的（做僕人）", en: "Obey your partner for the rest of the day (Be a servant)" },
+            { zh: "餵對方吃一樣甜點", en: "Feed your partner a dessert" },
+            { zh: "用撒嬌的聲音說「求求你原諒我」", en: "Say 'Please forgive me' in a cute/whiny voice" },
+            { zh: "抱著對方轉三圈", en: "Carry partner and spin 3 times" },
+            { zh: "讓對方在你臉上畫一個愛心", en: "Let partner draw a heart on your face" },
+            { zh: "深情擁抱 1 分鐘，不能鬆手", en: "Deep hug for 1 min, no letting go" },
+            { zh: "對著對方唱一首情歌的副歌", en: "Sing the chorus of a love song to partner" },
+            { zh: "誇獎對方 5 個優點，不能重複", en: "Give partner 5 compliments, no repeats" },
+            { zh: "壁咚對方，深情對視 10 秒", en: "Kabe-don partner and stare for 10s" }
         ]
     };
 
@@ -316,9 +587,12 @@
             modeMedium: "Heating Up", descMedium: "Memories & sweetness",
             modeDeep: "Soul Talk", descDeep: "Deep connection",
             modeTod: "Truth or Dare", descTod: "Spicy challenges",
+            modeMix: "Surprise Mix", descMix: "Random all levels",
+            modeSeasonal: "Holiday Special", descSeasonal: "Valentine's & More",
             turn: "Turn", next: "Next Card", finish: "Finish", giveUp: "Can't do it? Punishment",
             chooseDestiny: "Choose Your Destiny", truth: "Truth", dare: "Dare", back: "Back to Menu",
-            accept: "Accept & Next", question: "Question"
+            accept: "Accept & Next", question: "Question", shuffling: "Shuffling Deck",
+            chooseHoliday: "Choose Holiday", allHolidays: "All Holidays"
         },
         'zh-TW': {
             subtitle: "給愛一點時間，讓心更靠近。",
@@ -326,31 +600,208 @@
             modeMedium: "加溫時刻", descMedium: "甜蜜回憶 & 親密接觸",
             modeDeep: "靈魂深處", descDeep: "價值觀 & 心靈連結",
             modeTod: "真心話大冒險", descTod: "誠實回答或接受挑戰",
+            modeMix: "驚喜大亂鬥", descMix: "隨機混合所有等級題目",
+            modeSeasonal: "節日限定", descSeasonal: "情人節、聖誕與特別日子",
             turn: "輪到", next: "下一張", finish: "完成遊戲", giveUp: "做不到？接受懲罰",
             chooseDestiny: "選擇你的命運", truth: "真心話", dare: "大冒險", back: "回主選單",
-            accept: "接受懲罰並下一局", question: "問題"
+            accept: "接受懲罰並下一局", question: "問題", shuffling: "正在洗牌中",
+            chooseHoliday: "選擇節日主題", allHolidays: "全部隨機"
         }
     };
 
     createApp({
+        // --- 2. 在 template 中新增了 seasonal_selection 區塊 ---
+        template: `
+        <div id="app" class="h-[100dvh] w-full flex flex-col relative overflow-hidden transition-colors duration-500">
+            <div class="absolute top-0 left-0 w-full z-50 p-4 flex justify-between items-center">
+                <div class="flex items-center gap-2 active-scale" @click="resetGame">
+                    <span class="font-serif font-bold tracking-widest text-xl cursor-pointer text-brand-text dark:text-white">Home Page</span>
+                </div>
+                <div class="flex gap-3">
+                    <button @click="toggleDarkMode" class="p-2 rounded-full glass hover:bg-white/40 active-scale transition text-brand-text dark:text-white">{{ isDark ? '🌙' : '☀️' }}</button>
+                    <button @click="showSettings = true" class="p-2 rounded-full glass hover:bg-white/40 active-scale transition text-brand-text dark:text-white">⚙️</button>
+                </div>
+            </div>
+
+            <div v-if="showSettings" class="absolute inset-0 z-[60] bg-black/50 backdrop-blur-sm flex justify-end">
+                <div class="w-4/5 md:w-1/3 h-full bg-white dark:bg-dark-surface shadow-2xl p-6 flex flex-col overflow-y-auto slide-in-right">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold dark:text-white">Settings</h2>
+                        <button @click="showSettings = false" class="text-2xl dark:text-white p-2">&times;</button>
+                    </div>
+                    <div class="mb-6">
+                        <h3 class="text-sm font-bold opacity-50 mb-3 uppercase dark:text-gray-400">Language</h3>
+                        <div class="flex gap-2">
+                            <button v-for="lang in ['zh-TW', 'en']" @click="currentLang = lang"
+                                class="flex-1 px-3 py-2 rounded-lg text-sm border transition dark:text-white"
+                                :class="currentLang === lang ? 'bg-brand-dark text-white border-brand-dark' : 'border-gray-300 dark:border-gray-600'">
+                                {{ lang === 'en' ? 'English' : '繁體中文' }}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-auto text-xs text-center opacity-30 dark:text-gray-500">TWO DEEP <br> Ultimate Edition</div>
+                </div>
+            </div>
+
+            <div class="w-full max-w-md mx-auto h-full flex flex-col relative z-10 px-6 pt-16 pb-6">
+                <transition name="fade" mode="out-in">
+                    
+                    <div v-if="gameState === 'intro'" class="flex-1 flex flex-col justify-center space-y-5" key="intro">
+                        <div class="text-center space-y-2 mb-2">
+                            <h2 class="text-4xl font-serif font-bold dark:text-white">TWO DEEP</h2>
+                            <p class="opacity-60 text-sm dark:text-gray-400">{{ t('subtitle') }}</p>
+                        </div>
+                        <div class="space-y-3 overflow-y-auto pb-4 px-1 hide-scrollbar">
+                            <div v-for="(mode, key) in modes" :key="key" 
+                                @click="startGame(key)"
+                                class="glass p-4 rounded-2xl flex items-center gap-4 cursor-pointer transform transition hover:scale-[1.02] active:scale-95 shadow-sm border-l-4"
+                                :class="mode.borderColor">
+                                <div class="text-2xl w-12 h-12 rounded-full flex items-center justify-center shadow-sm" :class="mode.iconBg">{{ mode.emoji }}</div>
+                                <div class="flex-1">
+                                    <h3 class="font-bold dark:text-white">{{ t(mode.titleKey) }}</h3>
+                                    <p class="text-xs opacity-60 dark:text-gray-400 leading-tight mt-1">{{ t(mode.descKey) }}</p>
+                                </div>
+                                <div v-if="progress[key]" class="text-green-500 font-bold">✓</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-else-if="gameState === 'seasonal_selection'" class="flex-1 flex flex-col justify-center items-center gap-4" key="seasonal_selection">
+                         <div class="text-center mb-4">
+                            <h3 class="text-2xl font-serif font-bold dark:text-white">{{ t('chooseHoliday') }}</h3>
+                        </div>
+                        <div class="w-full grid grid-cols-2 gap-3 overflow-y-auto max-h-[60vh] px-1 pb-4">
+                            <button @click="pickSeasonal('all')" class="col-span-2 py-4 bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-2xl font-bold text-red-600 dark:text-red-400 shadow-sm active:scale-95 transition">
+                                {{ t('allHolidays') }} 🎁
+                            </button>
+                            <button v-for="h in holidays" :key="h.id" @click="pickSeasonal(h.keyword)" 
+                                class="py-4 glass rounded-2xl font-bold text-gray-700 dark:text-gray-200 shadow-sm active:scale-95 transition border dark:border-gray-600 hover:bg-white/80">
+                                {{ displayContent(h.label) }}
+                            </button>
+                        </div>
+                        <button @click="resetGame" class="mt-4 text-sm opacity-50 dark:text-white hover:opacity-100 transition">{{ t('back') }}</button>
+                    </div>
+
+                    <div v-else-if="gameState === 'selection'" class="flex-1 flex flex-col justify-center items-center gap-6" key="selection">
+                        <div class="text-center mb-4">
+                            <div class="glass px-4 py-1 rounded-full text-xs font-bold inline-block mb-4 dark:text-white backdrop-blur-md">
+                                {{ t('turn') }}: <span class="text-brand-dark dark:text-brand text-lg mx-1">{{ currentPlayer }}</span>
+                            </div>
+                            <h3 class="text-2xl font-serif font-bold dark:text-white">{{ t('chooseDestiny') }}</h3>
+                        </div>
+                        <button @click="pickTodCard('truth')" class="w-full py-8 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-3xl flex items-center px-6 gap-4 shadow-sm active:scale-95 transition group relative overflow-hidden">
+                            <div class="text-4xl group-hover:scale-110 transition">💙</div>
+                            <div class="text-left z-10">
+                                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ t('truth') }}</div>
+                                <div class="text-xs text-blue-400 dark:text-blue-300/60 font-bold tracking-wider">TRUTH</div>
+                            </div>
+                        </button>
+                        <button @click="pickTodCard('dare')" class="w-full py-8 bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-200 dark:border-orange-800 rounded-3xl flex items-center px-6 gap-4 shadow-sm active:scale-95 transition group relative overflow-hidden">
+                            <div class="text-4xl group-hover:scale-110 transition">🔥</div>
+                            <div class="text-left z-10">
+                                <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ t('dare') }}</div>
+                                <div class="text-xs text-orange-400 dark:text-orange-300/60 font-bold tracking-wider">DARE</div>
+                            </div>
+                        </button>
+                        <button @click="resetGame" class="mt-8 text-sm opacity-50 dark:text-white hover:opacity-100 transition">{{ t('back') }}</button>
+                    </div>
+
+                    <div v-else-if="gameState === 'game'" class="flex-1 flex flex-col relative pb-4" key="game">
+                        <div v-if="currentCategory !== 'tod' && !isShuffling" class="flex justify-center mb-4">
+                            <div class="glass px-5 py-1.5 rounded-full text-sm font-bold tracking-wider dark:text-white shadow-sm">
+                                {{ t('turn') }}: <span class="text-brand-dark dark:text-brand-light">{{ currentPlayer }}</span>
+                            </div>
+                        </div>
+                        <div v-if="isShuffling" class="flex justify-center mb-4">
+                            <div class="glass px-5 py-1.5 rounded-full text-sm font-bold tracking-wider dark:text-white shadow-sm animate-pulse">{{ t('shuffling') }}...</div>
+                        </div>
+                        <div class="flex-1 flex items-center justify-center perspective-1000 relative z-20">
+                            <transition name="fade" mode="out-in">
+                                <div v-if="isShuffling" class="w-full aspect-[3/4] max-h-[520px] rounded-[32px] shadow-card p-8 flex flex-col items-center justify-center relative overflow-hidden bg-brand-dark dark:bg-gray-800 border-4 border-white/20 card-stack animate-shuffle">
+                                     <div class="absolute inset-4 border-2 border-dashed border-white/30 rounded-[20px]"></div>
+                                     <div class="text-6xl animate-spin-slow">♠️</div>
+                                </div>
+                                <div v-else :key="currentCard.id" @click="revealCard" class="w-full aspect-[3/4] max-h-[520px] rounded-[32px] shadow-card p-8 flex flex-col relative overflow-hidden cursor-pointer transition-all duration-200 bg-white dark:bg-dark-surface border dark:border-gray-700 active:scale-[0.98] card-stack" :class="cardBorderClass">
+                                    <div v-if="!isRevealed" class="absolute inset-0 z-30 flex flex-col items-center justify-center bg-white/10 backdrop-blur-xl">
+                                        <span class="text-5xl animate-float mb-4 filter drop-shadow-md">👆</span>
+                                        <p class="text-xs font-bold tracking-[0.2em] uppercase opacity-60 dark:text-white">Tap to Reveal</p>
+                                    </div>
+                                    <div class="flex-1 flex flex-col justify-center items-center text-center transition-all duration-700" :class="{ 'blur-reveal': true, 'revealed': isRevealed }">
+                                        <span v-if="currentCard.type === 'action' || currentCard.subType === 'dare'" class="mb-6 px-3 py-1 bg-yellow-400 text-yellow-900 text-[10px] font-black tracking-widest rounded-full uppercase shadow-sm">ACTION / DARE</span>
+                                        <span v-if="currentCard.subType === 'truth'" class="mb-6 px-3 py-1 bg-blue-100 text-blue-600 text-[10px] font-black tracking-widest rounded-full uppercase shadow-sm">TRUTH</span>
+                                        <h3 class="font-serif font-medium leading-relaxed text-2xl md:text-3xl dark:text-white break-words w-full">{{ displayContent(currentCard.text) }}</h3>
+                                        <div v-if="currentCard.time && isRevealed" class="mt-8">
+                                            <button @click.stop="toggleTimer" class="px-6 py-2 rounded-full border-2 border-current opacity-70 hover:opacity-100 font-mono text-xl flex items-center gap-2 dark:text-white transition active:scale-95">
+                                                <span v-if="!timerRunning">▶ {{ currentCard.time }}s</span>
+                                                <span v-else class="text-red-500 font-bold">{{ timerCount }}s</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mt-auto flex justify-between items-end opacity-30 dark:text-gray-400">
+                                        <span class="text-[10px] uppercase font-bold tracking-widest">{{ currentCategory === 'tod' ? 'Truth or Dare' : t('question') }}</span>
+                                        <span class="text-[10px]">{{ isLastCard ? 'END' : '>>>' }}</span>
+                                    </div>
+                                </div>
+                            </transition>
+                        </div>
+                        <div class="mt-6 flex flex-col gap-3 z-30 transition-opacity duration-300" :class="{ 'opacity-0 pointer-events-none': isShuffling }">
+                            <div class="flex gap-3">
+                                <button @click="sendReaction" class="w-16 h-16 rounded-2xl bg-white dark:bg-dark-surface shadow-soft flex items-center justify-center text-2xl active:scale-90 transition border dark:border-gray-700">❤️</button>
+                                <button @click="nextCard" :disabled="!isRevealed" class="flex-1 h-16 rounded-2xl bg-brand-dark text-white font-bold text-lg shadow-soft flex justify-center items-center active:scale-95 disabled:opacity-50 disabled:active:scale-100 transition">
+                                    {{ isLastCard && currentCategory !== 'tod' && currentCategory !== 'mix' ? t('finish') : t('next') }}
+                                </button>
+                            </div>
+                            <button v-if="isRevealed" @click="triggerPunishment" class="text-xs text-gray-400 dark:text-gray-500 underline py-2 hover:text-brand-dark transition">{{ t('giveUp') }} ☠️</button>
+                        </div>
+                    </div>
+
+                    <div v-else-if="gameState === 'punish'" class="flex-1 flex flex-col justify-center items-center p-6" key="punish">
+                        <div class="w-full bg-gray-900 text-white rounded-[32px] shadow-2xl p-8 flex flex-col relative overflow-hidden text-center animate-shake border-2 border-red-500/50">
+                            <div class="absolute top-0 left-0 w-full h-4 hazard-stripe opacity-80"></div>
+                            <div class="absolute bottom-0 left-0 w-full h-4 hazard-stripe opacity-80"></div>
+                            <div class="my-10">
+                                <div class="text-6xl mb-6">☠️</div>
+                                <h2 class="text-sm font-bold tracking-[0.3em] mb-4 text-red-500 uppercase">Punishment</h2>
+                                <h3 class="text-2xl md:text-3xl font-bold leading-relaxed">{{ displayContent(currentPunishment) }}</h3>
+                            </div>
+                        </div>
+                        <button @click="resolvePunishment" class="mt-8 w-full py-4 bg-white text-black dark:bg-gray-700 dark:text-white rounded-2xl font-bold border border-gray-200 dark:border-gray-600 shadow-lg active:scale-95 transition">{{ t('accept') }}</button>
+                    </div>
+
+                </transition>
+            </div>
+            <canvas id="confetti" class="absolute inset-0 pointer-events-none z-[100]"></canvas>
+        </div>
+        `,
         setup() {
+            // LocalStorage Logic
+            const storedLang = localStorage.getItem('cm_lang');
+            const storedDark = localStorage.getItem('cm_dark');
+
             // State
             const gameState = ref('intro');
             const currentCategory = ref('light');
-            const currentLang = ref('zh-TW');
-            const isDark = ref(false);
+            const currentLang = ref(storedLang || 'zh-TW');
+            const isDark = ref(storedDark === 'true');
             const showSettings = ref(false);
             const deck = ref([]);
             const currentIndex = ref(0);
             const isRevealed = ref(false);
+            const isShuffling = ref(false);
             const turn = ref(0);
-            const progress = ref({ light: false, medium: false, deep: false, tod: false });
+            const progress = ref({ light: false, medium: false, deep: false, tod: false, mix: false, seasonal: false });
             
             const currentPunishment = ref("");
-
             const timerRunning = ref(false);
             const timerCount = ref(0);
             let timerInterval = null;
+
+            // Watchers for Persistence
+            watch(currentLang, (val) => localStorage.setItem('cm_lang', val));
+            watch(isDark, (val) => {
+                localStorage.setItem('cm_dark', val);
+                document.documentElement.classList.toggle('dark', val);
+            }, { immediate: true });
 
             // Computed
             const t = (key) => I18N[currentLang.value][key] || key;
@@ -362,12 +813,9 @@
                 return deck.value[currentIndex.value];
             });
 
-            // --- 新增：顯示邏輯處理函式 ---
             const displayContent = (content) => {
                 if (!content) return '';
-                // 如果是字串（相容舊格式）直接回傳
                 if (typeof content === 'string') return content;
-                // 如果是物件，根據語言設定回傳
                 return content[currentLang.value] || content['zh'];
             };
             
@@ -375,19 +823,35 @@
 
             const cardBorderClass = computed(() => {
                 if(currentCategory.value === 'tod') {
-                    return currentCard.value.subType === 'truth' ? 'border-l-4 border-blue-400' : 'border-l-4 border-orange-400';
+                    return currentCard.value.subType === 'truth' ? 'border-l-8 border-blue-400' : 'border-l-8 border-orange-400';
                 }
-                return currentCard.value.type === 'action' ? 'border-l-4 border-yellow-400' : 'border-l-4 border-brand-light';
+                const card = currentCard.value;
+                if (card.type === 'action') return 'border-l-8 border-yellow-400';
+                if (currentCategory.value === 'seasonal') return 'border-l-8 border-red-400';
+                return 'border-l-8 border-brand-light'; 
             });
 
             const modes = {
-                light: { titleKey: 'modeLight', descKey: 'descLight', emoji: '☁️', borderColor: 'border-blue-300', iconBg: 'bg-blue-100' },
-                medium: { titleKey: 'modeMedium', descKey: 'descMedium', emoji: '✨', borderColor: 'border-pink-300', iconBg: 'bg-pink-100' },
-                deep: { titleKey: 'modeDeep', descKey: 'descDeep', emoji: '🌙', borderColor: 'border-purple-300', iconBg: 'bg-purple-100' },
-                tod: { titleKey: 'modeTod', descKey: 'descTod', emoji: '🔥', borderColor: 'border-orange-300', iconBg: 'bg-orange-100' }
+                light: { titleKey: 'modeLight', descKey: 'descLight', emoji: '☁️', borderColor: 'border-blue-300', iconBg: 'bg-blue-100 text-blue-500' },
+                medium: { titleKey: 'modeMedium', descKey: 'descMedium', emoji: '✨', borderColor: 'border-pink-300', iconBg: 'bg-pink-100 text-pink-500' },
+                deep: { titleKey: 'modeDeep', descKey: 'descDeep', emoji: '🌙', borderColor: 'border-purple-300', iconBg: 'bg-purple-100 text-purple-500' },
+                mix: { titleKey: 'modeMix', descKey: 'descMix', emoji: '🎲', borderColor: 'border-emerald-300', iconBg: 'bg-emerald-100 text-emerald-500' },
+                seasonal: { titleKey: 'modeSeasonal', descKey: 'descSeasonal', emoji: '🎁', borderColor: 'border-red-300', iconBg: 'bg-red-100 text-red-500' },
+                tod: { titleKey: 'modeTod', descKey: 'descTod', emoji: '🔥', borderColor: 'border-orange-300', iconBg: 'bg-orange-100 text-orange-500' }
             };
 
-            const toggleDarkMode = () => { isDark.value = !isDark.value; document.documentElement.classList.toggle('dark'); };
+            // --- 3. 定義節日列表 ---
+            const holidays = [
+                { id: 'valentines', label: { zh: '情人節', en: 'Valentine\'s' }, keyword: '情人節' },
+                { id: 'christmas', label: { zh: '聖誕節', en: 'Christmas' }, keyword: '聖誕節' },
+                { id: 'newyear', label: { zh: '跨年', en: 'New Year' }, keyword: '跨年' },
+                { id: 'birthday', label: { zh: '生日', en: 'Birthday' }, keyword: '生日' },
+                { id: 'anniversary', label: { zh: '週年', en: 'Anniversary' }, keyword: '週年' },
+                { id: 'halloween', label: { zh: '萬聖節', en: 'Halloween' }, keyword: '萬聖節' },
+                { id: 'others', label: { zh: '其他假日', en: 'Others' }, keyword: '其他' } // 包含夏日、冬日等
+            ];
+
+            const toggleDarkMode = () => { isDark.value = !isDark.value; };
             const vibration = (pattern = 10) => { if(navigator.vibrate) navigator.vibrate(pattern); };
 
             const startGame = (category) => {
@@ -395,19 +859,66 @@
                 turn.value = 0;
                 resetTimer();
 
-                if (category === 'tod') {
-                    deck.value = []; 
-                    gameState.value = 'selection';
-                } else {
-                    // 重要修正：確保加上 ID 讓 Vue 正確渲染
-                    deck.value = [...DB[category]]
-                        .sort(() => Math.random() - 0.5)
-                        .map((c, i) => ({ ...c, id: i }));
-                    
-                    currentIndex.value = 0;
-                    isRevealed.value = false;
-                    gameState.value = 'game';
+                // 4. 如果選擇節日限定，則進入選擇選單
+                if (category === 'seasonal') {
+                    gameState.value = 'seasonal_selection';
+                    return;
                 }
+
+                launchGame(category);
+            };
+
+            // 5. 處理節日篩選邏輯
+            const pickSeasonal = (keyword) => {
+                let pool = DB.seasonal;
+                if (keyword !== 'all') {
+                    if (keyword === '其他') {
+                        // 排除上述主要節日的題目
+                        const mainKeys = ['情人節', '聖誕節', '跨年', '生日', '週年', '萬聖節'];
+                        pool = pool.filter(c => !mainKeys.some(k => c.text.zh.includes(k)));
+                    } else {
+                        pool = pool.filter(c => c.text.zh.includes(keyword));
+                    }
+                }
+                
+                // 為了避免篩選後沒題目，如果為空則回退到全部
+                if (pool.length === 0) pool = DB.seasonal;
+
+                setupDeck(pool);
+                gameState.value = 'game';
+            };
+
+            const launchGame = (category) => {
+                gameState.value = 'game';
+                let newDeck = [];
+                
+                if (category === 'tod') {
+                    newDeck = []; 
+                    gameState.value = 'selection';
+                    isShuffling.value = false;
+                    return;
+                } else if (category === 'mix') {
+                    const allCards = [...DB.light, ...DB.medium, ...DB.deep, ...DB.seasonal.slice(0, 5)];
+                    newDeck = allCards.sort(() => Math.random() - 0.5).map((c, i) => ({ ...c, id: `mix-${i}` }));
+                    setupDeck(newDeck, true); // true means skip shuffle (already shuffled)
+                } else {
+                    setupDeck(DB[category]);
+                }
+            };
+
+            const setupDeck = (sourceArray, skipShuffle = false) => {
+                isShuffling.value = true;
+                let finalDeck = skipShuffle ? sourceArray : [...sourceArray].sort(() => Math.random() - 0.5);
+                // Assign unique IDs
+                deck.value = finalDeck.map((c, i) => ({ ...c, id: Date.now() + i }));
+                
+                currentIndex.value = 0;
+                isRevealed.value = false;
+
+                vibration([50, 30, 50, 30, 50]);
+                setTimeout(() => {
+                    isShuffling.value = false;
+                }, 1200);
             };
 
             const pickTodCard = (type) => {
@@ -437,7 +948,7 @@
                     if (isLastCard.value) {
                         progress.value[currentCategory.value] = true;
                         launchConfetti();
-                        resetGame();
+                        setTimeout(resetGame, 2000);
                     } else {
                         isRevealed.value = false;
                         setTimeout(() => {
@@ -496,16 +1007,15 @@
             return {
                 gameState, modes, startGame, resetGame,
                 currentCategory, currentCard, currentPlayer,
-                isRevealed, isLastCard,
+                isRevealed, isLastCard, isShuffling,
                 nextCard, revealCard,
                 showSettings, isDark, toggleDarkMode, currentLang, t, progress,
                 pickTodCard, triggerPunishment, currentPunishment, resolvePunishment,
                 sendReaction, toggleTimer, timerRunning, timerCount, cardBorderClass,
-                displayContent 
+                displayContent, holidays, pickSeasonal
             };
         }
     }).mount('#app');
 </script>
-
 </body>
 </html>
